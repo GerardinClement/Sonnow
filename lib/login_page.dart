@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:sonnow/login.dart';
+import 'package:sonnow/auth_service.dart';
+import 'package:sonnow/profile_page.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -54,7 +55,7 @@ class LoginForm extends StatefulWidget {
 
 class _LoginFormState extends State<LoginForm> {
   var _obscureText = true;
-  final TextEditingController emailController = TextEditingController();
+  final TextEditingController usernameController = TextEditingController();
   final TextEditingController passwordController = TextEditingController();
   final AuthService authService = AuthService();
 
@@ -63,10 +64,10 @@ class _LoginFormState extends State<LoginForm> {
     return Column(
       children: [
         TextField(
-          controller: emailController,
+          controller: usernameController,
           decoration: InputDecoration(
-            labelText: 'Email',
-            hintText: 'Enter your email',
+            labelText: 'Username',
+            hintText: 'Enter your username',
           ),
         ),
         TextField(
@@ -87,16 +88,21 @@ class _LoginFormState extends State<LoginForm> {
         ),
         ElevatedButton(
           onPressed: () async {
-            String email = emailController.text;
+            String email = usernameController.text;
             String password = passwordController.text;
 
             bool success = await authService.login(email, password);
 
-            if (success) {
-              print("Connexion réussie !");
-            } else {
-              print("Erreur de connexion");
+            if (context.mounted) {
+              if (success) {
+                Navigator.pushReplacement(context, MaterialPageRoute(
+                    builder: (context) => const ProfilePage())
+                );
+              } else {
+                print("Erreur de connexion");
+              }
             }
+
           },
           child: Text('Login'),
         ),
