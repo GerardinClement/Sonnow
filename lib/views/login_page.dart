@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:sonnow/auth_service.dart';
-import 'package:sonnow/profile_page.dart';
+import 'package:sonnow/services/auth_service.dart';
+import 'package:sonnow/views/profile_page.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});

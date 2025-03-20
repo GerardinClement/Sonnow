@@ -1,10 +1,9 @@
 import 'dart:convert';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 
-import 'login_page.dart';
+import '../views/login_page.dart';
 
 class AuthService {
   static const String baseUrl = "http://10.0.2.2:8000/";
@@ -17,7 +16,7 @@ class AuthService {
       final csrfTokenMatch = RegExp(r'csrftoken=([^;]+)').firstMatch(cookieHeader!);
       return csrfTokenMatch?.group(1) ?? '';
     } else {
-      throw Exception("Impossible d'obtenir le token CSRF");
+      throw Exception("Error getting CSRF token");
     }
   }
 
@@ -146,7 +145,7 @@ class AuthService {
     if (token == null) return null;
 
     final response = await http.get(
-      Uri.parse(baseUrl + "user/info/"),
+      Uri.parse("${baseUrl}user/info/"),
       headers: {
         "Authorization": "Bearer $token",
         "X-CSRFToken": csrfToken,
