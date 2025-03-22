@@ -1,10 +1,7 @@
-import 'dart:ffi';
-
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:sonnow/services/auth_service.dart';
 import 'package:sonnow/views/welcome_page.dart';
-import 'package:sonnow/views/profile_page.dart'; // Import de la page de profil
 import 'package:sonnow/views/home_page.dart';
 
 void main() {

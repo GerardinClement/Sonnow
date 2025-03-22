@@ -142,7 +142,7 @@ class AuthService {
     final csrfToken = await getCsrfToken();
     final token = await getToken("access_token");
 
-    if (token == null) return null;
+    if (token == null) return null; // TODO: Handle this case
 
     final response = await http.get(
       Uri.parse("${baseUrl}user/info/"),

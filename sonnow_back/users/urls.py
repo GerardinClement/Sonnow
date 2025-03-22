@@ -1,7 +1,6 @@
 from django.urls import path
 from users.views.register_view import *
-from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView, TokenVerifyView, \
-    TokenRefreshSlidingView
+from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView, TokenVerifyView
 
 from users.views.user_view import UserView
 
