@@ -56,64 +56,71 @@ class _ReleasePageState extends State<ReleasePage> {
   }
 
   void _showReviewForm() {
-    String content = "";
-    double rating = 3.0;
-
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
       builder: (BuildContext context) {
-        return Padding(
-          padding: EdgeInsets.only(
-            bottom: MediaQuery.of(context).viewInsets.bottom,
-            left: 16,
-            right: 16,
-            top: 16,
-          ),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                "Add a review",
-                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+        String content = "";
+        double rating = 3.0;
+
+        return StatefulBuilder(
+          builder: (BuildContext context, StateSetter setModalState) {
+            return Padding(
+              padding: EdgeInsets.only(
+                bottom: MediaQuery.of(context).viewInsets.bottom,
+                left: 16,
+                right: 16,
+                top: 16,
               ),
-              TextField(
-                decoration: InputDecoration(labelText: "Your review"),
-                maxLines: 3,
-                onChanged: (value) => content = value,
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    "Add a review",
+                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                  ),
+                  TextField(
+                    decoration: InputDecoration(labelText: "Your review"),
+                    maxLines: 3,
+                    onChanged: (value) => content = value,
+                  ),
+                  SizedBox(height: 10),
+                  Text("Rate :"),
+                  RatingStars(
+                    value: rating,
+                    onValueChanged: (v) {
+                      setModalState(() {
+                        rating = v;
+                      });
+                    },
+                    starSize: 30,
+                    starColor: Colors.amber,
+                    starCount: 5,
+                    valueLabelVisibility: false,
+                  ),
+                  SizedBox(height: 20),
+                  ElevatedButton(
+                    onPressed: () {
+                      reviewService.postReview(
+                        release.id,
+                        content,
+                        rating,
+                      );
+                      Navigator.pop(context);
+                    },
+
+                    child: Text("Save"),
+                  ),
+                ],
               ),
-              SizedBox(height: 10),
-              Text("Rate :"),
-              RatingStars(
-                value: rating,
-                onValueChanged: (v) => rating = v,
-                starSize: 30,
-                starColor: Colors.amber,
-                starCount: 5,
-                valueLabelVisibility: false,
-              ),
-              SizedBox(height: 20),
-              ElevatedButton(
-                onPressed: () async {
-                  final review = await reviewService.postReview(
-                    release.id,
-                    content,
-                    rating,
-                  );
-                  setState(() {
-                    reviews.add(review);
-                    Navigator.pop(context);
-                  });
-                },
-                child: Text("Save"),
-              ),
-            ],
-          ),
+            );
+          },
         );
       },
     );
   }
+
 
   @override
   Widget build(BuildContext context) {
