@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:sonnow/services/auth_service.dart';
-import 'package:sonnow/views/welcome_page.dart';
-import 'package:sonnow/views/home_page.dart';
+import 'package:sonnow/pages/welcome_page.dart';
+import 'package:sonnow/pages/home_page.dart';
 
 void main() {
   runApp(MyApp());

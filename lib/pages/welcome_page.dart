@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:sonnow/delayed_animation.dart';
-import 'package:sonnow/views/login_page.dart';
+import 'package:sonnow/pages/login_page.dart';
 
 class WelcomePage extends StatelessWidget {
   const WelcomePage({super.key});
