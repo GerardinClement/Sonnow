@@ -17,6 +17,10 @@ class LikedArtistSerializer(serializers.ModelSerializer):
         fields = ['id', 'user', 'artist_id', 'date_added']
         read_only_fields = ['user', 'date_added']
 
+    def create(self, validated_data):
+        validated_data['user'] = self.context['request'].user
+        return super().create(validated_data)
+
 class ToListenSerializer(serializers.ModelSerializer):
     class Meta:
         model = ToListenRelease

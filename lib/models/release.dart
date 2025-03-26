@@ -11,6 +11,7 @@ class Release {
   final List<String> releasesIds;
   late List<Track> tracklist;
   late String imageUrl;
+  late bool isLiked;
 
 
   Release({

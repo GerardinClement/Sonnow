@@ -34,7 +34,11 @@ class _ReleasePageState extends State<ReleasePage> {
 
   Future<void> _fetchLikedReleases() async {
     try {
-      await userLibraryService.fetchUserLikedReleases();
+      bool releaseLiked = await userLibraryService.checkIfReleaseIsLiked(release.id);
+      setState(() {
+        release.isLiked = releaseLiked;
+      });
+
     } catch (e) {
       print(e);
     }
@@ -56,6 +60,21 @@ class _ReleasePageState extends State<ReleasePage> {
       List<Review> result = await reviewService.getReviews(id);
       setState(() {
         reviews = result;
+      });
+    } catch (e) {
+      print(e);
+    }
+  }
+
+  Future<void> toggleLike() async {
+    try {
+      if (release.isLiked) {
+        await userLibraryService.unlikeRelease(release.id);
+      } else {
+        await userLibraryService.likeRelease(release.id);
+      }
+      setState(() {
+        release.isLiked = !release.isLiked;
       });
     } catch (e) {
       print(e);
@@ -168,8 +187,8 @@ class _ReleasePageState extends State<ReleasePage> {
                   ),
                   SizedBox( width: 20),
                   IconButton(onPressed: () {
-                    userLibraryService.likeRelease(release.id);
-                  }, icon: Icon(Icons.favorite_border)),
+                    toggleLike();
+                  }, icon: Icon(release.isLiked ? Icons.favorite : Icons.favorite_border)),
                 ],
               ),
               SizedBox(height: 20),
