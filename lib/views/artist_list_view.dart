@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:sonnow/models/artist.dart';
+import 'package:sonnow/pages/artist_page.dart';
 
 class ArtistListView extends StatelessWidget {
   final List<Artist> artists;
@@ -24,27 +25,27 @@ class ArtistListView extends StatelessWidget {
         itemBuilder: (context, index) {
           return InkWell(
             onTap: () {
-              // Navigator.push(
-              //   context,
-              //   MaterialPageRoute(
-              //     builder: (context) => ArtistsPage(id: artists[index].id),
-              //   ),
-              // );
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => ArtistPage(id: artists[index].id),
+                ),
+              );
               print("Artist ID: ${artists[index].id}");
             },
             child: ListTile(
-              // leading: ClipRRect(
-              //   borderRadius: BorderRadius.circular(8),
-              //   child: Image.network(
-              //     "https://coverartarchive.org/release/${releases[index].id}/front-250",
-              //     width: 50,
-              //     height: 50,
-              //     fit: BoxFit.cover,
-              //     errorBuilder: (context, error, stackTrace) {
-              //       return const SizedBox(width: 50, height: 50);
-              //     },
-              //   ),
-              // ),
+              leading: ClipRRect(
+                borderRadius: BorderRadius.circular(100),
+                child: Image.network(
+                  artists[index].imageUrl,
+                  width: 50,
+                  height: 50,
+                  fit: BoxFit.cover,
+                  errorBuilder: (context, error, stackTrace) {
+                    return const SizedBox(width: 50, height: 50);
+                  },
+                ),
+              ),
               title: Text(artists[index].name),
             ),
           );

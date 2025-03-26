@@ -28,7 +28,7 @@ class ReleaseListView extends StatelessWidget {
               Navigator.push(
                 context,
                 MaterialPageRoute(
-                  builder: (context) => ReleasePage(id: releases[index].id),
+                  builder: (context) => ReleasePage(release: releases[index]),
                 ),
               );
             },
@@ -36,12 +36,21 @@ class ReleaseListView extends StatelessWidget {
               leading: ClipRRect(
                 borderRadius: BorderRadius.circular(8),
                 child: Image.network(
-                  "https://coverartarchive.org/release/${releases[index].id}/front-250",
+                  releases[index].imageUrl,
                   width: 50,
                   height: 50,
                   fit: BoxFit.cover,
                   errorBuilder: (context, error, stackTrace) {
-                    return const SizedBox(width: 50, height: 50);
+                    releases[index].getGoodImageUrl();
+                    return Image.network(
+                      releases[index].imageUrl,
+                        width: 50,
+                        height: 50,
+                        fit: BoxFit.cover,
+                        errorBuilder: (context, error, stackTrace) {
+                          return const SizedBox(width: 50, height: 50);
+                        },
+                    );
                   },
                 ),
               ),

@@ -19,7 +19,7 @@ class _HomePageState extends State<HomePage> {
   List<Release> releases = [];
   List<Artist> artists = [];
   Timer? _debounce;
-  final List<String> _tags = ['Title', 'Artist', 'Release'];
+  final List<String> _tags = ['Artist', 'Release'];
   String _selectedTag = "";
   String _searchQuery = "";
 

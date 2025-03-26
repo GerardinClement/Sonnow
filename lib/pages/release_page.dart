@@ -6,9 +6,9 @@ import 'package:sonnow/services/review_service.dart';
 import 'package:flutter_rating_stars/flutter_rating_stars.dart';
 
 class ReleasePage extends StatefulWidget {
-  final String id;
+  final Release release;
 
-  const ReleasePage({super.key, required this.id});
+  const ReleasePage({super.key, required this.release});
 
   @override
   _ReleasePageState createState() => _ReleasePageState();
@@ -19,23 +19,19 @@ class _ReleasePageState extends State<ReleasePage> {
   final ReviewService reviewService = ReviewService();
 
   List<Review> reviews = [];
-  Release release = Release(
-    id: "0",
-    title: "Unknown",
-    artist: "Unknown",
-    date: "Unknown",
-  );
+  late Release release;
 
   @override
   void initState() {
     super.initState();
-    _fetchRelease(widget.id);
-    _fetchReviews(widget.id);
+    release = widget.release;
+    _fetchRelease(release);
+    _fetchReviews(release.id);
   }
 
-  Future<void> _fetchRelease(String id) async {
+  Future<void> _fetchRelease(Release release) async {
     try {
-      release = await musicApi.getRelease(id);
+      await musicApi.getReleaseTracklist(release);
       setState(() {
         release = release;
       });
@@ -139,7 +135,7 @@ class _ReleasePageState extends State<ReleasePage> {
                   ClipRRect(
                     borderRadius: BorderRadius.circular(8),
                     child: Image.network(
-                      "https://coverartarchive.org/release/${release.id}/front-250",
+                      release.imageUrl,
                       width: 200,
                       height: 200,
                       fit: BoxFit.cover,
@@ -155,6 +151,7 @@ class _ReleasePageState extends State<ReleasePage> {
                       children: [
                         Text(release.title, style: TextStyle(fontSize: 18)),
                         Text(release.artist, style: TextStyle(fontSize: 18)),
+                        Text(release.type, style: TextStyle(fontSize: 18)),
                         Text(release.date, style: TextStyle(fontSize: 18)),
                       ],
                     ),
