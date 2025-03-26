@@ -5,19 +5,12 @@ import 'package:sonnow/pages/release_page.dart';
 class ReleaseCard extends StatelessWidget {
   final Release release;
 
-  const ReleaseCard({
-    Key? key,
-    required this.release,
-  }) : super(key: key);
+  const ReleaseCard({Key? key, required this.release}) : super(key: key);
 
   void onTap(context) {
     Navigator.push(
       context,
-      MaterialPageRoute(
-        builder:
-            (context) =>
-            ReleasePage(release:release),
-      ),
+      MaterialPageRoute(builder: (context) => ReleasePage(release: release)),
     );
   }
 
@@ -37,16 +30,7 @@ class ReleaseCard extends StatelessWidget {
                 height: 100,
                 fit: BoxFit.cover,
                 errorBuilder: (context, error, stackTrace) {
-                  release.getGoodImageUrl();
-                  return Image.network(
-                    release.imageUrl,
-                    width: 100,
-                    height: 100,
-                    fit: BoxFit.cover,
-                    errorBuilder: (context, error, stackTrace) {
-                      return const SizedBox(width: 100, height: 100);
-                    },
-                  );
+                  return const SizedBox(width: 100, height: 100);
                 },
               ),
             ),

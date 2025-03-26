@@ -4,6 +4,7 @@ import 'package:sonnow/models/review.dart';
 import 'package:sonnow/services/musicbrainz_api.dart';
 import 'package:sonnow/services/review_service.dart';
 import 'package:flutter_rating_stars/flutter_rating_stars.dart';
+import 'package:sonnow/services/user_library_service.dart';
 
 class ReleasePage extends StatefulWidget {
   final Release release;
@@ -17,6 +18,7 @@ class ReleasePage extends StatefulWidget {
 class _ReleasePageState extends State<ReleasePage> {
   final MusicBrainzApi musicApi = MusicBrainzApi();
   final ReviewService reviewService = ReviewService();
+  final UserLibraryService userLibraryService = UserLibraryService();
 
   List<Review> reviews = [];
   late Release release;
@@ -27,6 +29,15 @@ class _ReleasePageState extends State<ReleasePage> {
     release = widget.release;
     _fetchRelease(release);
     _fetchReviews(release.id);
+    _fetchLikedReleases();
+  }
+
+  Future<void> _fetchLikedReleases() async {
+    try {
+      await userLibraryService.fetchUserLikedReleases();
+    } catch (e) {
+      print(e);
+    }
   }
 
   Future<void> _fetchRelease(Release release) async {
@@ -117,7 +128,6 @@ class _ReleasePageState extends State<ReleasePage> {
     );
   }
 
-
   @override
   Widget build(BuildContext context) {
     return DefaultTabController(
@@ -156,6 +166,10 @@ class _ReleasePageState extends State<ReleasePage> {
                       ],
                     ),
                   ),
+                  SizedBox( width: 20),
+                  IconButton(onPressed: () {
+                    userLibraryService.likeRelease(release.id);
+                  }, icon: Icon(Icons.favorite_border)),
                 ],
               ),
               SizedBox(height: 20),

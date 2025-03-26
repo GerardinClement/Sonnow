@@ -6,16 +6,12 @@ class Artist {
   String imageUrl = "";
   Map<String, List<Release>> releaseByType = {};
 
-
-
-  Artist({
-    required this.name,
-    required this.id,
-  });
+  Artist({required this.name, required this.id});
 
   void setImageUrl(String url) {
     imageUrl = url;
   }
+
   void setReleasesByType(List<Release> releases) {
     for (var release in releases) {
       if (releaseByType.containsKey(release.type)) {
@@ -24,6 +20,13 @@ class Artist {
         releaseByType[release.type] = [release];
       }
     }
+
+    releaseByType = Map.fromEntries(
+      releaseByType.entries.toList()..sort((a, b) {
+        const order = ['single', 'ep', 'album'];
+        return order.indexOf(a.key).compareTo(order.indexOf(b.key));
+      }),
+    );
   }
 
   factory Artist.fromJson(Map<String, dynamic> json) {

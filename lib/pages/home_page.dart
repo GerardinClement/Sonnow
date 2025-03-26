@@ -59,10 +59,13 @@ class _HomePageState extends State<HomePage> {
       setState(() {
         artists = result;
       });
+      for (var artist in artists) {
+        await musicApi.getArtistReleases(artist);
+      }
     } catch (e) {
       print(e);
       setState(() {
-        releases = [];
+        artists = [];
       });
     }
   }
@@ -77,8 +80,14 @@ class _HomePageState extends State<HomePage> {
       if (_selectedTag == "Artist") _fetchArtist(query);
       if (_selectedTag == "Release") _fetchRelease(query);
       if (_selectedTag.isEmpty) {
-        _fetchArtist(query);
-        _fetchRelease(query);
+        Future.wait([
+          _fetchArtist(query),
+          _fetchRelease(query)
+        ]).then((value) {
+          for (var artist in artists) {
+            musicApi.getArtistReleases(artist);
+          }
+        });
       }
     });
   }

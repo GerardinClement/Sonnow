@@ -65,14 +65,12 @@ class Release {
     );
   }
 
-  Future<String> getGoodImageUrl() async {
+  Future<void> getGoodImageUrl() async {
     final MusicBrainzApi api = MusicBrainzApi();
     for (var release in releasesIds) {
       if (await api.imageExists("https://coverartarchive.org/release/${release}/front")) {
         imageUrl = "https://coverartarchive.org/release/${release}/front";
-        return imageUrl;
       }
     }
-    return "";
   }
 }

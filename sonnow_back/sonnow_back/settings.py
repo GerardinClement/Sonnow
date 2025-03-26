@@ -51,6 +51,7 @@ INSTALLED_APPS = [
     'users.apps.UsersConfig',
 
     'reviews',
+    'user_library',
 ]
 
 REST_FRAMEWORK = {

@@ -28,7 +28,7 @@ class ArtistListView extends StatelessWidget {
               Navigator.push(
                 context,
                 MaterialPageRoute(
-                  builder: (context) => ArtistPage(id: artists[index].id),
+                  builder: (context) => ArtistPage(artist: artists[index]),
                 ),
               );
               print("Artist ID: ${artists[index].id}");

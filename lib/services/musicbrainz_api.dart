@@ -56,6 +56,10 @@ class MusicBrainzApi {
           .toList()
           ..sort((a, b) => b.date.compareTo(a.date));
 
+      Future.forEach(releases, (release) async {
+        release.getGoodImageUrl();
+      });
+
       return releases;
     } else {
       throw Exception('Failed to load releases');
@@ -64,7 +68,7 @@ class MusicBrainzApi {
 
   Future<List<Release>> searchRelease(String releaseName) async {
     final response = await http.get(
-        Uri.parse("${baseUrl}release-group/?query=release:$releaseName&fmt=json")
+        Uri.parse("${baseUrl}release-group/?query=release:$releaseName&fmt=json&limit=20")
     );
 
     if (response.statusCode == 200) {
@@ -80,7 +84,7 @@ class MusicBrainzApi {
 
   Future<List<Artist>> searchArtist(String artistName) async {
     final response = await http.get(
-        Uri.parse("${baseUrl}artist?query=artist:$artistName&fmt=json&inc=url-rels")
+        Uri.parse("${baseUrl}artist?query=artist:$artistName&fmt=json&inc=url-rels&limits=10")
     );
 
     if (response.statusCode == 200) {
