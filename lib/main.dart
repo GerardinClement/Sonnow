@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:sonnow/services/auth_service.dart';
 import 'package:sonnow/services/user_library_service.dart';
+import 'package:sonnow/services/user_library_storage.dart';
 import 'package:sonnow/pages/welcome_page.dart';
 import 'package:sonnow/pages/home_page.dart';
 import 'package:hive_flutter/hive_flutter.dart';
@@ -22,6 +23,7 @@ class MyApp extends StatefulWidget {
 
 class _MyAppState extends State<MyApp> {
   Widget _homePage = Center(child: CircularProgressIndicator());
+  final UserLibraryService userLibraryService = UserLibraryService();
   late bool isLogin;
 
   @override
@@ -31,8 +33,8 @@ class _MyAppState extends State<MyApp> {
   }
 
   Future<void> _getLikedReleases() async {
-    final Map<String, String> likedRelease = await UserLibraryService().fetchUserLikedReleases();
-    await UserLibraryService().addLikedReleasesInBox(likedRelease);
+    final Map<String, String> likedRelease = await userLibraryService.fetchUserLikedReleases();
+    await addLikedReleasesInBox(likedRelease);
   }
 
   Future<void> _checkLoginStatus() async {

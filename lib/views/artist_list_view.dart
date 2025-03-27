@@ -7,10 +7,10 @@ class ArtistListView extends StatelessWidget {
   final bool shrinkWrap;
 
   const ArtistListView({
-    Key? key,
+    super.key,
     required this.artists,
     required this.shrinkWrap,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {

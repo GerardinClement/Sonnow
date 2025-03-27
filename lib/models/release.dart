@@ -11,7 +11,7 @@ class Release {
   final List<String> releasesIds;
   late List<Track> tracklist;
   late String imageUrl;
-  late bool isLiked;
+  late bool isLiked = false;
 
 
   Release({
@@ -61,7 +61,7 @@ class Release {
       date: json['first-release-date']?.toString() ?? "Unknown",
       type: type,
       primaryReleaseId: primaryReleaseId,
-      imageUrl: "https://coverartarchive.org/release/${primaryReleaseId}/front",
+      imageUrl: "https://coverartarchive.org/release/$primaryReleaseId/front",
       releasesIds: releasesIds,
     );
   }
@@ -69,8 +69,8 @@ class Release {
   Future<void> getGoodImageUrl() async {
     final MusicBrainzApi api = MusicBrainzApi();
     for (var release in releasesIds) {
-      if (await api.imageExists("https://coverartarchive.org/release/${release}/front")) {
-        imageUrl = "https://coverartarchive.org/release/${release}/front";
+      if (await api.imageExists("https://coverartarchive.org/release/$release/front")) {
+        imageUrl = "https://coverartarchive.org/release/$release/front";
       }
     }
   }

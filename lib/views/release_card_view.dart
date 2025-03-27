@@ -5,7 +5,7 @@ import 'package:sonnow/pages/release_page.dart';
 class ReleaseCard extends StatelessWidget {
   final Release release;
 
-  const ReleaseCard({Key? key, required this.release}) : super(key: key);
+  const ReleaseCard({super.key, required this.release});
 
   void onTap(context) {
     Navigator.push(

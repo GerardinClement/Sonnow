@@ -21,4 +21,5 @@ urlpatterns = [
     path('user/', include('users.urls')),
     path('review/', include('reviews.urls')),
     path('user/library/', include('user_library.urls')),
+    path('release/', include('releases.urls')),
 ]

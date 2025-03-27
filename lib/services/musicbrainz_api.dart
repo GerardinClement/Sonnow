@@ -3,7 +3,6 @@ import 'dart:convert';
 import 'package:sonnow/models/release.dart';
 import 'package:sonnow/models/artist.dart';
 import 'package:sonnow/models/track.dart';
-import 'package:sonnow/services/user_library_service.dart';
 import 'package:http/http.dart' as http;
 import 'dart:io';
 import 'dart:async';

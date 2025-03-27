@@ -7,10 +7,10 @@ class ReleaseListView extends StatelessWidget {
   final bool shrinkWrap;
 
   const ReleaseListView({
-    Key? key,
+    super.key,
     required this.releases,
     required this.shrinkWrap,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {

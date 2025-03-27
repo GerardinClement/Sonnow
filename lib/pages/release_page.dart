@@ -69,9 +69,9 @@ class _ReleasePageState extends State<ReleasePage> {
   Future<void> toggleLike() async {
     try {
       if (release.isLiked) {
-        await userLibraryService.unlikeRelease(release.id);
+        await userLibraryService.unlikeRelease(release);
       } else {
-        await userLibraryService.likeRelease(release.id);
+        await userLibraryService.likeRelease(release);
       }
       setState(() {
         release.isLiked = !release.isLiked;

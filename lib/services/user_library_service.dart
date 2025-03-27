@@ -1,13 +1,13 @@
-import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:sonnow/services/auth_service.dart';
 import 'package:hive/hive.dart';
 import 'package:hive_flutter/hive_flutter.dart';
-import 'package:sonnow/services/user_librairy_storage.dart';
+import 'package:sonnow/services/user_library_storage.dart';
+import 'package:sonnow/models/release.dart';
 
 class UserLibraryService {
-  final String baseUrl = "http://10.0.2.2:8000/user/library/";
+  final String baseUrl = "http://10.0.2.2:8000/user/library";
   final AuthService authService = AuthService();
 
   Future<void> fetchUserLibrary() async {
@@ -38,17 +38,17 @@ class UserLibraryService {
     Map<String, String> header = await setRequestHeader();
 
     final response = await http.get(
-      Uri.parse("${baseUrl}liked-releases/"),
+      Uri.parse("$baseUrl/liked-releases/"),
       headers: header,
     );
 
     if (response.statusCode == 200) {
-      final Map<String, String> likedReleases =
-          (json.decode(response.body) as List)
-              .fold<Map<String, String>>({}, (map, release) {
-                map[release['release_id']] = release['date_added'];
-                return map;
-              });
+      final Map<String, String> likedReleases = (json.decode(response.body)
+              as List)
+          .fold<Map<String, String>>({}, (map, release) {
+            map[release['release_id']] = release['date_added'];
+            return map;
+          });
       return likedReleases;
     } else {
       throw Exception("Error getting user liked releases");
@@ -60,11 +60,12 @@ class UserLibraryService {
     return box.containsKey(releaseId);
   }
 
-  Future<void> likeRelease(String releaseId) async {
+  Future<void> likeRelease(Release release) async {
     Map<String, String> header = await setRequestHeader();
 
+    await getOrCreateRelease(release);
     final response = await http.post(
-      Uri.parse("$baseUrl$releaseId/like-release/"),
+      Uri.parse("$baseUrl/like-release/${release.id}/"),
       headers: header,
     );
 
@@ -73,17 +74,62 @@ class UserLibraryService {
     }
   }
 
-  Future<void> unlikeRelease(String releaseId) async {
+  Future<void> unlikeRelease(Release release) async {
     Map<String, String> header = await setRequestHeader();
 
     final response = await http.delete(
-      Uri.parse("$baseUrl$releaseId/liked-release/"),
+      Uri.parse("$baseUrl/unlike-release/${release.id}/"),
       headers: header,
     );
 
     if (response.statusCode != 204) {
       throw Exception("Error liking release");
     }
-    removeLikedReleasesFromBox(releaseId);
+    removeLikedReleasesFromBox(release.id);
+  }
+
+  // Methods to get/create release in database
+  Future<void> getOrCreateRelease(Release release) async {
+    try {
+      await getRelease(release);
+    } catch (e) {
+      await createRelease(release);
+    }
+  }
+
+  Future<void> getRelease(Release release) async {
+    Map<String, String> header = await setRequestHeader();
+
+    final response = await http.get(
+      Uri.parse("http://10.0.2.2:8000/release/${release.id}/"),
+      headers: header,
+    );
+
+    if (response.statusCode == 200) {
+      print(response.body);
+    } else {
+      throw Exception("Error getting release: ${response.statusCode} - ${response.body}");
+    }
+  }
+
+  Future<void> createRelease(Release release) async {
+    Map<String, String> header = await setRequestHeader();
+
+    final response = await http.post(
+      Uri.parse("http://10.0.2.2:8000/release/"),
+      headers: header,
+      body: jsonEncode({
+        "release_id": release.id,
+        "title": release.title,
+        "artist": release.artist,
+        "release_date": release.date,
+        "type": release.type,
+        "image_url": release.imageUrl,
+      }),
+    );
+
+    if (response.statusCode != 201) {
+      throw Exception("Error creating release: ${response.statusCode} - ${response.body}");
+    }
   }
 }

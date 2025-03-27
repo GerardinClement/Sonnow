@@ -52,6 +52,7 @@ INSTALLED_APPS = [
 
     'reviews',
     'user_library',
+    'releases',
 ]
 
 REST_FRAMEWORK = {

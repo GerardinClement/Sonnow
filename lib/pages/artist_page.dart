@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:sonnow/models/release.dart';
 import 'package:sonnow/models/artist.dart';
 import 'package:sonnow/services/musicbrainz_api.dart';
-import 'package:sonnow/pages/release_page.dart';
 import 'package:sonnow/views/release_card_view.dart';
 
 class ArtistPage extends StatefulWidget {
