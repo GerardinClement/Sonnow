@@ -33,10 +33,12 @@ class _ArtistPageState extends State<ArtistPage> {
           final List<Release> releases = await musicApi.getArtistReleases(artist);
           artist.setReleasesByType(releases);
       }
-      setState(() {
-        artist = artist;
-        isLoading = false;
-      });
+      if (mounted) {
+        setState(() {
+          artist = artist;
+          isLoading = false;
+        });
+      }
     } catch (e) {
       print(e);
     }

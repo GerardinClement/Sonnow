@@ -31,10 +31,10 @@ class _SearchPageState extends State<SearchPage> {
   }
 
   void clearSearch() {
-      setState(() {
-        releases = [];
-        artists = [];
-      });
+    setState(() {
+      releases = [];
+      artists = [];
+    });
   }
 
   Future<void> _fetchRelease(String query) async {
@@ -53,6 +53,12 @@ class _SearchPageState extends State<SearchPage> {
     }
   }
 
+  Future<void> _loadArtistsRelease() async {
+    for (var artist in artists) {
+      musicApi.getArtistReleases(artist);
+    }
+  }
+
   Future<void> _fetchArtist(String query) async {
     try {
       List<Artist> result = await musicApi.searchArtist(query);
@@ -60,10 +66,8 @@ class _SearchPageState extends State<SearchPage> {
       if (mounted) {
         setState(() {
           artists = result;
+          _loadArtistsRelease();
         });
-      }
-      for (var artist in artists) {
-        await musicApi.getArtistReleases(artist);
       }
     } catch (e) {
       print(e);
@@ -73,24 +77,20 @@ class _SearchPageState extends State<SearchPage> {
     }
   }
 
-  void onSearchChanged(String query) {
+  void onSearchChanged(String query) async {
     if (_debounce?.isActive ?? false) _debounce!.cancel();
-    _debounce = Timer(const Duration(seconds: 1), () {
+    _debounce = Timer(const Duration(milliseconds: 500), () async {
       if (query.isEmpty) {
         clearSearch();
         return;
       }
-      if (_selectedTag == "Artist") _fetchArtist(query);
-      if (_selectedTag == "Release") _fetchRelease(query);
+      if (_selectedTag == "Artist") await _fetchArtist(query);
+      if (_selectedTag == "Release") await _fetchRelease(query);
       if (_selectedTag.isEmpty) {
         Future.wait([
           _fetchArtist(query),
           _fetchRelease(query)
-        ]).then((value) {
-          for (var artist in artists) {
-            musicApi.getArtistReleases(artist);
-          }
-        });
+        ]);
       }
     });
   }
@@ -124,19 +124,18 @@ class _SearchPageState extends State<SearchPage> {
               padding: const EdgeInsets.fromLTRB(8.0, 0, 8.0, 8.0),
               child: Wrap(
                 spacing: 8.0,
-                children:
-                    _tags.map((tag) {
-                      return ChoiceChip(
-                        label: Text(tag),
-                        selected: _selectedTag == tag,
-                        onSelected: (selected) {
-                          setState(() {
-                            _selectedTag = selected ? tag : "";
-                          });
-                          onSearchChanged(_searchQuery);
-                        },
-                      );
-                    }).toList(),
+                children: _tags.map((tag) {
+                  return ChoiceChip(
+                    label: Text(tag),
+                    selected: _selectedTag == tag,
+                    onSelected: (selected) {
+                      setState(() {
+                        _selectedTag = selected ? tag : "";
+                      });
+                      onSearchChanged(_searchQuery);
+                    },
+                  );
+                }).toList(),
               ),
             ),
             if (_selectedTag == "Release" || _selectedTag.isEmpty) ...[
