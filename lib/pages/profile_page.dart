@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:sonnow/services/auth_service.dart';
+import 'package:sonnow/pages/library_page.dart';
 
 class ProfilePage extends StatefulWidget {
   const ProfilePage({super.key});
@@ -27,12 +28,13 @@ class _ProfilePageState extends State<ProfilePage> {
         } else {
           var userData = snapshot.data;
           return Scaffold(
-            appBar: AppBar(
-              title: Text("Profile"),
-            ),
+            appBar: AppBar(title: Text("Profile")),
             body: Column(
               children: [
-                Text('Email: ${userData?['email']}', style: TextStyle(fontSize: 18)),
+                Text(
+                  'Email: ${userData?['email']}',
+                  style: TextStyle(fontSize: 18),
+                ),
                 ElevatedButton(
                   onPressed: () {
                     AuthService().logout(context);
