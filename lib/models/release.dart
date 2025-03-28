@@ -66,6 +66,27 @@ class Release {
     );
   }
 
+  factory Release.fromJson(Map<String, dynamic> json) {
+    Map<String, dynamic> release = json['release'];
+    List<String> releasesIds = [];
+    if (json.containsKey('releases_ids')) {
+      for (var release in release['releases_ids']) {
+        releasesIds.add(release.toString());
+      }
+    }
+
+    return Release(
+      id: release['release_id']?.toString() ?? "Unknown",
+      title: release['title']?.toString() ?? "Unknown",
+      artist: release['artist']?.toString() ?? "Unknown",
+      date: release['release_date']?.toString() ?? "Unknown",
+      type: release['type']?.toString() ?? "Unknown",
+      primaryReleaseId: release['primary_release_id']?.toString() ?? "Unknown",
+      imageUrl: release['image_url']?.toString() ?? "Unknown",
+      releasesIds: releasesIds,
+    );
+  }
+
   Future<void> getGoodImageUrl() async {
     final MusicBrainzApi api = MusicBrainzApi();
     for (var release in releasesIds) {

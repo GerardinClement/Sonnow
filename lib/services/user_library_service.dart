@@ -21,6 +21,8 @@ class UserLibraryService {
   }
 
   Future<Map<String, String>> setRequestHeader() async {
+    if (!await authService.checkIfLoggedIn()) throw Exception("User not logged in");
+
     final csrfToken = await authService.getCsrfToken();
     final token = await authService.getToken("access_token");
 
@@ -34,7 +36,7 @@ class UserLibraryService {
     };
   }
 
-  Future<Map<String, String>> fetchUserLikedReleases() async {
+  Future<List<Release>> fetchUserLikedReleases() async {
     Map<String, String> header = await setRequestHeader();
 
     final response = await http.get(
@@ -43,12 +45,10 @@ class UserLibraryService {
     );
 
     if (response.statusCode == 200) {
-      final Map<String, String> likedReleases = (json.decode(response.body)
-              as List)
-          .fold<Map<String, String>>({}, (map, release) {
-            map[release['release_id']] = release['date_added'];
-            return map;
-          });
+      final responseData = jsonDecode(response.body) as List;
+
+      final List<Release> likedReleases = responseData.map((json) => Release.fromJson(json)).toList();
+
       return likedReleases;
     } else {
       throw Exception("Error getting user liked releases");
@@ -125,6 +125,8 @@ class UserLibraryService {
         "release_date": release.date,
         "type": release.type,
         "image_url": release.imageUrl,
+        "releases_ids": release.releasesIds,
+        "primary_release_id": release.primaryReleaseId,
       }),
     );
 

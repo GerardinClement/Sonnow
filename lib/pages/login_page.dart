@@ -95,9 +95,7 @@ class _LoginFormState extends State<LoginForm> {
 
             if (context.mounted) {
               if (success) {
-                Navigator.pushReplacement(context, MaterialPageRoute(
-                    builder: (context) => const ProfilePage())
-                );
+                Navigator.pushReplacementNamed(context, '/home');
               } else {
                 print("Erreur de connexion");
               }

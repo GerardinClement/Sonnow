@@ -3,11 +3,11 @@ from django.db import models
 
 class LikedRelease(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
-    release_id = models.CharField(max_length=100)
+    release = models.ForeignKey('releases.Release', on_delete=models.CASCADE)
     date_added = models.DateTimeField(auto_now_add=True)
 
     class Meta:
-        unique_together = ('user', 'release_id',)
+        unique_together = ('user', 'release',)
 
 class LikedArtist(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
@@ -19,8 +19,8 @@ class LikedArtist(models.Model):
 
 class ToListenRelease(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
-    release_id = models.CharField(max_length=100)
+    release = models.ForeignKey('releases.Release', on_delete=models.CASCADE)
     date_added = models.DateTimeField(auto_now_add=True)
 
     class Meta:
-        unique_together = ('user', 'release_id',)
+        unique_together = ('user', 'release',)

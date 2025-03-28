@@ -7,14 +7,14 @@ import 'package:sonnow/services/musicbrainz_api.dart';
 import 'package:sonnow/views/release_list_view.dart';
 import 'package:sonnow/views/artist_list_view.dart';
 
-class HomePage extends StatefulWidget {
-  const HomePage({super.key});
+class SearchPage extends StatefulWidget {
+  const SearchPage({super.key});
 
   @override
-  _HomePageState createState() => _HomePageState();
+  _SearchPageState createState() => _SearchPageState();
 }
 
-class _HomePageState extends State<HomePage> {
+class _SearchPageState extends State<SearchPage> {
   final MusicBrainzApi musicApi = MusicBrainzApi();
   List<Release> releases = [];
   List<Artist> artists = [];
@@ -31,19 +31,20 @@ class _HomePageState extends State<HomePage> {
   }
 
   void clearSearch() {
-    setState(() {
-      releases = [];
-      artists = [];
-    });
+      setState(() {
+        releases = [];
+        artists = [];
+      });
   }
 
   Future<void> _fetchRelease(String query) async {
     try {
       List<Release> result = await musicApi.searchRelease(query);
-
-      setState(() {
-        releases = result;
-      });
+      if (mounted) {
+        setState(() {
+          releases = result;
+        });
+      }
     } catch (e) {
       print(e);
       setState(() {
@@ -56,9 +57,11 @@ class _HomePageState extends State<HomePage> {
     try {
       List<Artist> result = await musicApi.searchArtist(query);
 
-      setState(() {
-        artists = result;
-      });
+      if (mounted) {
+        setState(() {
+          artists = result;
+        });
+      }
       for (var artist in artists) {
         await musicApi.getArtistReleases(artist);
       }
