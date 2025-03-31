@@ -1,10 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:sonnow/models/release.dart';
+import 'package:sonnow/models/artist.dart';
 import 'package:sonnow/models/review.dart';
+import 'package:sonnow/models/track.dart';
 import 'package:sonnow/services/musicbrainz_api.dart';
 import 'package:sonnow/services/review_service.dart';
 import 'package:flutter_rating_stars/flutter_rating_stars.dart';
 import 'package:sonnow/services/user_library_service.dart';
+import 'package:sonnow/services/user_library_storage.dart';
 
 class ReleasePage extends StatefulWidget {
   final Release release;
@@ -30,15 +33,30 @@ class _ReleasePageState extends State<ReleasePage> {
     _fetchRelease(release);
     _fetchReviews(release.id);
     _fetchLikedReleases();
+    _fetchToListenReleases();
   }
 
   Future<void> _fetchLikedReleases() async {
     try {
-      bool releaseLiked = await userLibraryService.checkIfReleaseIsLiked(release.id);
+      bool releaseLiked = await userLibraryService.checkIfReleaseIsLiked(
+        release.id,
+      );
       setState(() {
         release.isLiked = releaseLiked;
       });
+    } catch (e) {
+      print(e);
+    }
+  }
 
+  Future<void> _fetchToListenReleases() async {
+    try {
+      bool releaseToListen = await userLibraryService.checkIfReleaseIsToListen(
+        release.id,
+      );
+      setState(() {
+        release.toListen = releaseToListen;
+      });
     } catch (e) {
       print(e);
     }
@@ -66,15 +84,47 @@ class _ReleasePageState extends State<ReleasePage> {
     }
   }
 
+  Future<void> _fetchTrack(Track track) async {
+    try {
+      await musicApi.getTrackDetail(track);
+      setState(() {
+        track = track;
+      });
+    } catch (e) {
+      print(e);
+    }
+  }
+
   Future<void> toggleLike() async {
     try {
       if (release.isLiked) {
         await userLibraryService.unlikeRelease(release);
+        removeLikedReleasesFromBox(release.id);
       } else {
         await userLibraryService.likeRelease(release);
+        addLikedReleasesInBox([release]);
       }
+
       setState(() {
         release.isLiked = !release.isLiked;
+      });
+    } catch (e) {
+      print(e);
+    }
+  }
+
+  Future<void> toggleToListen() async {
+    try {
+      if (release.toListen) {
+        await userLibraryService.removeToListenRelease(release);
+        removeToListenReleasesFromBox(release.id);
+      } else {
+        await userLibraryService.addToListenRelease(release);
+        addToListenReleasesInBox([release]);
+      }
+
+      setState(() {
+        release.toListen = !release.toListen;
       });
     } catch (e) {
       print(e);
@@ -128,11 +178,7 @@ class _ReleasePageState extends State<ReleasePage> {
                   SizedBox(height: 20),
                   ElevatedButton(
                     onPressed: () {
-                      reviewService.postReview(
-                        release.id,
-                        content,
-                        rating,
-                      );
+                      reviewService.postReview(release.id, content, rating);
                       Navigator.pop(context);
                     },
 
@@ -145,6 +191,87 @@ class _ReleasePageState extends State<ReleasePage> {
         );
       },
     );
+  }
+
+  Widget buildModalTrackDetail(Track track) {
+    return Container(
+      width: double.infinity,
+      child: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              track.title,
+              style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              track.artist[0].name,
+              style: const TextStyle(fontSize: 18, color: Colors.grey),
+            ),
+            const SizedBox(height: 16),
+            const Text(
+              "Crédits artistiques:",
+              style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+            ),
+            const SizedBox(height: 8),
+            track.artistCredits.isEmpty
+                ? const Text("Aucun crédit disponible")
+                : Container(
+                  constraints: const BoxConstraints(maxHeight: 200),
+                  child: ListView.builder(
+                    shrinkWrap: true,
+                    itemCount: track.artistCredits.length,
+                    itemBuilder: (context, index) {
+                      return ListTile(
+                        dense: true,
+                        title: Text(track.artistCredits[index].name),
+                        subtitle: Text(track.artistCredits[index].tag),
+                      );
+                    },
+                  ),
+                ),
+            Container(
+              child: ListView.builder(
+                shrinkWrap: true,
+                physics: const NeverScrollableScrollPhysics(),
+                itemCount: track.placeCredits.length,
+                itemBuilder: (context, index) {
+                  return ListTile(
+                    leading: Text(track.placeCredits[index]['type']!),
+                    title: Text(track.placeCredits[index]['name']!),
+                    subtitle: Text(
+                      track.placeCredits[index]['area_name'] != null
+                          ? "${track.placeCredits[index]['area_name']}"
+                          : "",
+                    ),
+                  );
+                },
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  String getArtistNames(List<Artist> artists, String joinPhrase) {
+    if (artists.length == 1) return artists[0].name;
+    if (artists.length > 1) {
+      String phrase = "";
+      for (int i = 0; i < artists.length; i++) {
+        phrase += artists[i].name;
+        if (i == 0) {
+          phrase += " $joinPhrase ";
+        } else if (i != artists.length - 1) {
+          phrase += ", ";
+        }
+      }
+      return phrase;
+    }
+    return "";
   }
 
   @override
@@ -185,10 +312,23 @@ class _ReleasePageState extends State<ReleasePage> {
                       ],
                     ),
                   ),
-                  SizedBox( width: 20),
-                  IconButton(onPressed: () {
-                    toggleLike();
-                  }, icon: Icon(release.isLiked ? Icons.favorite : Icons.favorite_border)),
+                  SizedBox(width: 20),
+                  IconButton(
+                    onPressed: () {
+                      toggleLike();
+                    },
+                    icon: Icon(
+                      release.isLiked ? Icons.favorite : Icons.favorite_border,
+                    ),
+                  ),
+                  IconButton(
+                    onPressed: () {
+                      toggleToListen();
+                    },
+                    icon: Icon(
+                      release.toListen ? Icons.add_circle : Icons.add_circle_outline_outlined,
+                    ),
+                  ),
                 ],
               ),
               SizedBox(height: 20),
@@ -199,9 +339,34 @@ class _ReleasePageState extends State<ReleasePage> {
                     ListView.builder(
                       itemCount: release.tracklist.length,
                       itemBuilder: (context, index) {
-                        return ListTile(
-                          leading: Text("${release.tracklist[index].position}"),
-                          title: Text(release.tracklist[index].title),
+                        return InkWell(
+                          onTap: () async {
+                            if (release
+                                .tracklist[index]
+                                .artistCredits
+                                .isEmpty) {
+                              await _fetchTrack(release.tracklist[index]);
+                            }
+                            showModalBottomSheet(
+                              context: context,
+                              builder:
+                                  (context) => buildModalTrackDetail(
+                                    release.tracklist[index],
+                                  ),
+                            );
+                          },
+                          child: ListTile(
+                            leading: Text(
+                              "${release.tracklist[index].position}",
+                            ),
+                            title: Text(release.tracklist[index].title),
+                            subtitle: Text(
+                              getArtistNames(
+                                release.tracklist[index].artist,
+                                release.tracklist[index].joinPhrase,
+                              ),
+                            ),
+                          ),
                         );
                       },
                     ),

@@ -26,8 +26,6 @@ class _SearchPageState extends State<SearchPage> {
   @override
   void initState() {
     super.initState();
-    _fetchRelease("temps mort");
-    _fetchArtist("vald");
   }
 
   void clearSearch() {
@@ -53,12 +51,6 @@ class _SearchPageState extends State<SearchPage> {
     }
   }
 
-  Future<void> _loadArtistsRelease() async {
-    for (var artist in artists) {
-      musicApi.getArtistReleases(artist);
-    }
-  }
-
   Future<void> _fetchArtist(String query) async {
     try {
       List<Artist> result = await musicApi.searchArtist(query);
@@ -66,7 +58,6 @@ class _SearchPageState extends State<SearchPage> {
       if (mounted) {
         setState(() {
           artists = result;
-          _loadArtistsRelease();
         });
       }
     } catch (e) {
@@ -90,9 +81,28 @@ class _SearchPageState extends State<SearchPage> {
         Future.wait([
           _fetchArtist(query),
           _fetchRelease(query)
-        ]);
+        ]).then((_) {
+          if (mounted) {
+            setState(() {
+              preloadArtistImages(artists);
+              preloadReleaseImages(releases);
+            });
+          }
+        });
       }
     });
+  }
+
+  Future<void> preloadArtistImages(List<Artist> artists) async {
+    for (var artist in artists) {
+      precacheImage(NetworkImage(artist.imageUrl), context);
+    }
+  }
+
+  Future<void> preloadReleaseImages(List<Release> releases) async {
+    for (var release in releases) {
+      precacheImage(NetworkImage(release.imageUrl), context);
+    }
   }
 
   @override

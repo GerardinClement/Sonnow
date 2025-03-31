@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:sonnow/pages/login_page.dart';
 import 'package:sonnow/pages/profile_page.dart';
 import 'package:sonnow/pages/search_page.dart';
 import 'package:sonnow/pages/library_page.dart';
@@ -9,6 +10,7 @@ import 'package:sonnow/models/release.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:sonnow/models/tab_item.dart';
 import 'package:sonnow/layouts/bottom_navigation.dart';
+import 'package:sonnow/globals.dart';
 
 
 class App extends StatefulWidget {
@@ -50,6 +52,21 @@ class AppState extends State<App> {
     } else {
       setState(() => currentTab = index);
     }
+
+    if (tabs[index].tabName == 'Library') {
+      libraryRefreshNotifier.value = true;
+    }
+    else {
+      libraryRefreshNotifier.value = false;
+    }
+  }
+
+  void onLoginSuccess() async {
+    await _getLikedReleases();
+    await _getToListenReleases();
+    setState(() {
+      isLogin = true;
+    });
   }
 
   @override
@@ -59,9 +76,13 @@ class AppState extends State<App> {
   }
 
   Future<void> _getLikedReleases() async {
-    final List<Release> likedRelease =
-    await userLibraryService.fetchUserLikedReleases();
+    final List<Release> likedRelease = await userLibraryService.fetchUserLikedReleases();
     await addLikedReleasesInBox(likedRelease);
+  }
+
+  Future<void> _getToListenReleases() async {
+    final List<Release> toListenReleases = await userLibraryService.fetchUserToListenReleases();
+    await addToListenReleasesInBox(toListenReleases);
   }
 
   Future<void> _checkLoginStatus() async {
@@ -69,14 +90,22 @@ class AppState extends State<App> {
     isLogin = await AuthService().checkIfLoggedIn();
     if (isLogin) {
       _getLikedReleases();
+      _getToListenReleases();
     }
+    setState(() {
+      isLogin = isLogin;
+    });
   }
 
   @override
   Widget build(BuildContext context) {
+    if (!isLogin) {
+      return LoginPage(
+        onLoginSuccess: onLoginSuccess,
+      );
+    }
     return PopScope(
       child: Scaffold(
-        // indexed stack shows only one child
         body: IndexedStack(
           index: currentTab,
           children: tabs.map((e) => e.page).toList(),

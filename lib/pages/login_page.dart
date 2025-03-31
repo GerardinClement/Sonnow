@@ -3,14 +3,15 @@ import 'package:sonnow/services/auth_service.dart';
 import 'package:sonnow/pages/profile_page.dart';
 
 class LoginPage extends StatefulWidget {
-  const LoginPage({super.key});
+  final Function onLoginSuccess;
+  const LoginPage({super.key , required this.onLoginSuccess});
 
   @override
   _LoginPageState createState() => _LoginPageState();
 }
 
 class _LoginPageState extends State<LoginPage> {
-  bool isLogin = true; // true = Login, false = Register
+  bool isLogin = true;
 
   void toggleForm() {
     setState(() {
@@ -18,8 +19,14 @@ class _LoginPageState extends State<LoginPage> {
     });
   }
 
+  void onLoginSuccess() {
+    widget.onLoginSuccess();
+  }
+
   @override
   Widget build(BuildContext context) {
+    final loginPage = context.findAncestorWidgetOfExactType<LoginPage>();
+
     return Scaffold(
       appBar: AppBar(
         title: Text(isLogin ? 'Login Page' : 'Register Page'),
@@ -29,7 +36,7 @@ class _LoginPageState extends State<LoginPage> {
           margin: EdgeInsets.symmetric(vertical: 100, horizontal: 40),
           child: Column(
             children: [
-              isLogin ? LoginForm() : RegisterForm(),
+              isLogin ? LoginForm(onLoginSuccess: onLoginSuccess,) : RegisterForm(),
               SizedBox(height: 20),
               TextButton(
                 onPressed: toggleForm,
@@ -47,7 +54,8 @@ class _LoginPageState extends State<LoginPage> {
 }
 
 class LoginForm extends StatefulWidget {
-  const LoginForm({super.key});
+  final Function onLoginSuccess;
+  const LoginForm({super.key, required this.onLoginSuccess});
 
   @override
   _LoginFormState createState() => _LoginFormState();
@@ -55,6 +63,7 @@ class LoginForm extends StatefulWidget {
 
 class _LoginFormState extends State<LoginForm> {
   var _obscureText = true;
+  String? _errorMessage;
   final TextEditingController usernameController = TextEditingController();
   final TextEditingController passwordController = TextEditingController();
   final AuthService authService = AuthService();
@@ -91,19 +100,37 @@ class _LoginFormState extends State<LoginForm> {
             String email = usernameController.text;
             String password = passwordController.text;
 
-            bool success = await authService.login(email, password);
+            try {
+              bool success = await authService.login(email, password);
 
-            if (context.mounted) {
-              if (success) {
-                Navigator.pushReplacementNamed(context, '/home');
-              } else {
-                print("Erreur de connexion");
+              if (context.mounted) {
+                if (success) {
+                  widget.onLoginSuccess();
+                } else {
+                  setState(() {
+                    _errorMessage = "Login failed. Please check your credentials.";
+                  });
+                }
+              }
+            } catch (e) {
+              if (context.mounted) {
+                setState(() {
+                  _errorMessage = "An error occurred: ${e.toString()}";
+                });
               }
             }
 
           },
           child: Text('Login'),
         ),
+        if (_errorMessage != null)
+          Padding(
+            padding: const EdgeInsets.only(top: 8.0),
+            child: Text(
+              _errorMessage!,
+              style: TextStyle(color: Colors.red),
+            ),
+          ),
       ],
     );
   }
@@ -118,6 +145,8 @@ class RegisterForm extends StatefulWidget {
 
 class _RegisterFormState extends State<RegisterForm> {
   var _obscureText = true;
+  String? _errorMessage;
+  String? _successMessage;
   final TextEditingController emailController = TextEditingController();
   final TextEditingController passwordController = TextEditingController();
   final TextEditingController usernameController = TextEditingController();
@@ -166,13 +195,29 @@ class _RegisterFormState extends State<RegisterForm> {
             bool success = await authService.register(username, email, password);
 
             if (success) {
-              print("Inscription réussie !");
+              _successMessage = "Registration successful! You can now log in.";
             } else {
-              print("Erreur lors de l'inscription");
+              _errorMessage = "An error occurred during registration. Please check your information and try again.";
             }
           },
           child: Text('Register'),
         ),
+        if (_errorMessage != null)
+          Padding(
+            padding: const EdgeInsets.only(top: 8.0),
+            child: Text(
+              _errorMessage!,
+              style: TextStyle(color: Colors.red),
+            ),
+          ),
+        if (_successMessage != null)
+          Padding(
+            padding: const EdgeInsets.only(top: 8.0),
+            child: Text(
+              _successMessage!,
+              style: TextStyle(color: Colors.green),
+            ),
+          ),
       ],
     );
   }

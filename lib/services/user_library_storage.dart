@@ -15,3 +15,17 @@ Future<void> removeLikedReleasesFromBox(String releaseId) async {
 
   box.delete(releaseId);
 }
+
+Future<void> addToListenReleasesInBox(List<Release> toListenReleases) async {
+  var box = await Hive.openBox("to_listen_releases");
+
+  for (var release in toListenReleases) {
+    box.put(release.id, release.date);
+  }
+}
+
+Future<void> removeToListenReleasesFromBox(String releaseId) async {
+  var box = await Hive.openBox("to_listen_releases");
+
+  box.delete(releaseId);
+}

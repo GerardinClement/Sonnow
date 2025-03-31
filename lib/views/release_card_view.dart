@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:sonnow/models/release.dart';
 import 'package:sonnow/pages/release_page.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 
 class ReleaseCard extends StatelessWidget {
   final Release release;
@@ -24,12 +25,13 @@ class ReleaseCard extends StatelessWidget {
           children: [
             ClipRRect(
               borderRadius: BorderRadius.circular(8),
-              child: Image.network(
-                release.imageUrl,
+              child: CachedNetworkImage(
+                imageUrl: release.imageUrl,
                 width: 100,
                 height: 100,
                 fit: BoxFit.cover,
-                errorBuilder: (context, error, stackTrace) {
+                placeholder: (context, url) => const SizedBox(width: 100, height: 100),
+                errorWidget: (context, error, stackTrace) {
                   return const SizedBox(width: 100, height: 100);
                 },
               ),

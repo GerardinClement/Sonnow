@@ -1,3 +1,4 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:sonnow/models/release.dart';
 import 'package:sonnow/pages/release_page.dart';
@@ -42,12 +43,13 @@ class ReleaseListView extends StatelessWidget {
                   fit: BoxFit.cover,
                   errorBuilder: (context, error, stackTrace) {
                     releases[index].getGoodImageUrl();
-                    return Image.network(
-                      releases[index].imageUrl,
+                    return CachedNetworkImage(
+                        imageUrl: releases[index].imageUrl,
                         width: 50,
                         height: 50,
                         fit: BoxFit.cover,
-                        errorBuilder: (context, error, stackTrace) {
+                        placeholder: (context, url) => const CircularProgressIndicator(),
+                        errorWidget: (context, error, stackTrace) {
                           return const SizedBox(width: 50, height: 50);
                         },
                     );

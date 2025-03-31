@@ -1,9 +1,14 @@
+import 'package:sonnow/models/artist.dart';
+
 class Track {
   final String id;
   final String title;
-  final String artist;
+  final List<Artist> artist;
   final String date;
+  late List<Artist> artistCredits;
+  late List<Map<String, String>> placeCredits;
   final int position;
+  String joinPhrase;
 
   Track({
     required this.id,
@@ -11,16 +16,50 @@ class Track {
     required this.artist,
     required this.date,
     required this.position,
-  });
+    this.joinPhrase = "",
+  }) {
+    artistCredits = [];
+    placeCredits = [];
+  }
 
-  factory Track.fromJson(Map<String, dynamic> json, String artistName) {
+  void setArtistCredits(List<dynamic> credits) {
+    artistCredits = [];
+    for (var credit in credits) {
+      if (credit['target-type'] == 'artist') {
+        final Artist artist = Artist.fromJson(credit['artist']);
+        if (artistCredits.any((a) => a.name == artist.name && a.tag == artist.tag)) continue;
+        artistCredits.add(Artist.fromJson(credit['artist']));
+      }
+      else if (credit['target-type'] == 'place') {
+        final Map<String, String> place = {
+          'type': credit['type']?.toString() ?? "Unknown",
+          'name': credit['place']['name']?.toString() ?? "Unknown",
+          'area_name': credit['place']['area']['name']?.toString() ?? "Unknown",
+        };
+        if (placeCredits.any((p) => p['name'] == place['name'])) continue;
+        placeCredits.add(place);
+      }
+    }
+  }
+
+  factory Track.fromJson(Map<String, dynamic> json) {
+    String joinPhrase = "";
+    final String id = json['recording']['id']?.toString() ?? "Unknown";
+    final List<Artist> artist = [];
+    for (var credit in json['artist-credit']) {
+      if (credit['artist'] == null) continue;
+      if (credit['joinphrase'].isNotEmpty) {
+        joinPhrase = credit['joinphrase']?.toString() ?? "";
+      }
+      artist.add(Artist.fromJson(credit['artist']));
+    }
     return Track(
-      id: json['id']?.toString() ?? "Unknown",
+      id: id,
       title: json['title']?.toString() ?? "Unknown",
-      artist: artistName,
+      artist: artist,
       date: json['date']?.toString() ?? "Unknown",
       position: json['position'] ?? 0,
-
+      joinPhrase: joinPhrase,
     );
   }
 }

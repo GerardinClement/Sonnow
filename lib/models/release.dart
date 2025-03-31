@@ -1,3 +1,4 @@
+import 'package:flutter/cupertino.dart';
 import 'package:sonnow/models/track.dart';
 import 'package:sonnow/services/musicbrainz_api.dart';
 
@@ -12,6 +13,7 @@ class Release {
   late List<Track> tracklist;
   late String imageUrl;
   late bool isLiked = false;
+  late bool toListen = false;
 
 
   Release({
@@ -53,6 +55,8 @@ class Release {
         releasesIds.add(release['id']?.toString() ?? "Unknown");
       }
     }
+
+
 
     return Release(
       id: id,

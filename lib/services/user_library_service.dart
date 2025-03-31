@@ -55,8 +55,61 @@ class UserLibraryService {
     }
   }
 
+  Future<List<Release>> fetchUserToListenReleases() async {
+    Map<String, String> header = await setRequestHeader();
+
+    final response = await http.get(
+      Uri.parse("$baseUrl/to-listen/"),
+      headers: header,
+    );
+
+    if (response.statusCode == 200) {
+      final responseData = jsonDecode(response.body) as List;
+
+      final List<Release> likedReleases = responseData.map((json) => Release.fromJson(json)).toList();
+
+      return likedReleases;
+    } else {
+      throw Exception("Error getting user liked releases");
+    }
+  }
+
+  Future<void> addToListenRelease(Release release) async {
+    Map<String, String> header = await setRequestHeader();
+
+    await getOrCreateRelease(release);
+    final response = await http.post(
+      Uri.parse("$baseUrl/to-listen/add/${release.id}/"),
+      headers: header,
+    );
+
+    if (response.statusCode != 201) {
+      throw Exception("Error when adding release to listen");
+    }
+  }
+
+  Future<void> removeToListenRelease(Release release) async {
+    Map<String, String> header = await setRequestHeader();
+
+    final response = await http.delete(
+      Uri.parse("$baseUrl/to-listen/delete/${release.id}/"),
+      headers: header,
+    );
+
+    if (response.statusCode != 204) {
+      throw Exception("Error when removing release to listen");
+    }
+    removeLikedReleasesFromBox(release.id);
+  }
+
+
   Future<bool> checkIfReleaseIsLiked(String releaseId) async {
     var box = await Hive.openBox("liked_releases");
+    return box.containsKey(releaseId);
+  }
+
+  Future<bool> checkIfReleaseIsToListen(String releaseId) async {
+    var box = await Hive.openBox("to_listen_releases");
     return box.containsKey(releaseId);
   }
 

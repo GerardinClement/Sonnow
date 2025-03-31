@@ -3,6 +3,7 @@ import 'package:sonnow/models/release.dart';
 import 'package:sonnow/models/artist.dart';
 import 'package:sonnow/services/musicbrainz_api.dart';
 import 'package:sonnow/views/release_card_view.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 
 class ArtistPage extends StatefulWidget {
   final Artist artist;
@@ -29,9 +30,8 @@ class _ArtistPageState extends State<ArtistPage> {
 
   Future<void> _fetchArtist() async {
     try {
-      if (artist.releaseByType.isEmpty) {
-          final List<Release> releases = await musicApi.getArtistReleases(artist);
-          artist.setReleasesByType(releases);
+      if (artist.releases.isEmpty) {
+        await musicApi.getArtistReleases(artist);
       }
       if (mounted) {
         setState(() {
@@ -58,12 +58,14 @@ class _ArtistPageState extends State<ArtistPage> {
                   children: [
                     ClipRRect(
                       borderRadius: BorderRadius.circular(100),
-                      child: Image.network(
-                        artist.imageUrl,
+                      child: CachedNetworkImage(
+                        imageUrl: artist.imageUrl,
                         width: 200,
                         height: 200,
                         fit: BoxFit.cover,
-                        errorBuilder: (context, error, stackTrace) {
+                        placeholder:
+                            (context, url) => SizedBox(width: 200, height: 200),
+                        errorWidget: (context, error, stackTrace) {
                           return SizedBox(width: 200, height: 200);
                         },
                       ),
@@ -71,46 +73,19 @@ class _ArtistPageState extends State<ArtistPage> {
                     SizedBox(height: 20),
                     Text(artist.name, style: TextStyle(fontSize: 18)),
                     SizedBox(height: 8),
-                    Expanded(
+                    SizedBox(
+                      height: 150,
                       child:
-                          artist.releaseByType.isEmpty
+                          artist.releases.isEmpty
                               ? const Center(child: Text("No result"))
-                              : SingleChildScrollView(
-                                child: Column(
-                                  children:
-                                      artist.releaseByType.entries.map((entry) {
-                                        String type = entry.key;
-                                        List<Release> releases = entry.value;
-
-                                        return Column(
-                                          crossAxisAlignment:
-                                              CrossAxisAlignment.start,
-                                          children: [
-                                            Text(
-                                              type,
-                                              style: TextStyle(
-                                                fontSize: 18,
-                                                fontWeight: FontWeight.bold,
-                                              ),
-                                            ),
-                                            SizedBox(
-                                              height:
-                                                  200, // Set a fixed height for the ListView
-                                              child: ListView.builder(
-                                                scrollDirection:
-                                                    Axis.horizontal,
-                                                itemCount: releases.length < 5 ? releases.length : 5,
-                                                itemBuilder: (context, index) {
-                                                  return ReleaseCard(
-                                                    release: releases[index],
-                                                  );
-                                                },
-                                              ),
-                                            ),
-                                          ],
-                                        );
-                                      }).toList(),
-                                ),
+                              : ListView.builder(
+                                scrollDirection: Axis.horizontal,
+                                itemCount: artist.releases.length > 15 ? 15 : artist.releases.length,
+                                itemBuilder: (context, index) {
+                                  return ReleaseCard(
+                                    release: artist.releases[index],
+                                  );
+                                },
                               ),
                     ),
                   ],

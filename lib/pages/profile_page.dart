@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:sonnow/services/auth_service.dart';
 import 'package:sonnow/pages/library_page.dart';
+import 'package:sonnow/pages/login_page.dart';
+import 'package:sonnow/app.dart';
 
 class ProfilePage extends StatefulWidget {
   const ProfilePage({super.key});
@@ -37,7 +39,14 @@ class _ProfilePageState extends State<ProfilePage> {
                 ),
                 ElevatedButton(
                   onPressed: () {
-                    AuthService().logout(context);
+                    AuthService().logout(context, () {
+                      Navigator.pushReplacement(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => App(),
+                        ),
+                      );
+                    });
                   },
                   child: Text("Logout"),
                 ),

@@ -45,7 +45,11 @@ class WelcomePage extends StatelessWidget {
                             ),
                             onPressed: () {
                               Navigator.push(context, MaterialPageRoute(
-                                  builder: (context) => LoginPage())
+                                  builder: (context) => LoginPage(
+                                    onLoginSuccess: () {
+                                      print("Login successful");
+                                    },
+                                  ))
                               );
                             },
                             child: Text('Get Started', style: TextStyle(

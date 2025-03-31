@@ -5,6 +5,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import 'package:sonnow/pages/login_page.dart';
 
+
 class AuthService {
   static const String baseUrl = "http://10.0.2.2:8000/";
 
@@ -64,17 +65,13 @@ class AuthService {
     }
   }
 
-  Future<void> logout(BuildContext context) async {
+  Future<void> logout(BuildContext context, Function onLogout) async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
 
     await prefs.remove("access_token");
     await prefs.remove("refresh_token");
 
-    Navigator.pushAndRemoveUntil(
-      context,
-      MaterialPageRoute(builder: (context) => LoginPage()),
-          (Route<dynamic> route) => false,
-    );
+    onLogout();
   }
 
   Future saveAuthToken(data) async {

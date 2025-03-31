@@ -13,8 +13,8 @@ urlpatterns = [
 
     #To listen controller
     path('to-listen/', ToListenReleaseListCreateView.as_view(), name='to-listen'),
-    path('to-listen/<str:release_id>/', ToListenReleaseListCreateView.as_view(), name='add-to-listen'),
-    path('to_listen/<str:release_id>/', ToListenReleaseDeleteView.as_view(), name='remove-to-listen'),
+    path('to-listen/add/<str:release_id>/', ToListenReleaseListCreateView.as_view(), name='add-to-listen'),
+    path('to-listen/delete/<str:release_id>/', ToListenReleaseDeleteView.as_view(), name='remove-to-listen'),
 
     #Liked artist controller
     path('liked-artists/', LikedArtistListCreateView.as_view(), name='liked-artists'),

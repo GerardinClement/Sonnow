@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:sonnow/models/artist.dart';
 import 'package:sonnow/pages/artist_page.dart';
+import 'package:cached_network_image/cached_network_image.dart';
+
 
 class ArtistListView extends StatelessWidget {
   final List<Artist> artists;
@@ -37,12 +39,13 @@ class ArtistListView extends StatelessWidget {
                     child: ListTile(
                       leading: ClipRRect(
                         borderRadius: BorderRadius.circular(100),
-                        child: Image.network(
-                          artists[index].imageUrl,
+                        child: CachedNetworkImage(
+                          imageUrl: artists[index].imageUrl,
                           width: 50,
                           height: 50,
                           fit: BoxFit.cover,
-                          errorBuilder: (context, error, stackTrace) {
+                          placeholder: (context, url) => const CircularProgressIndicator(),
+                          errorWidget: (context, error, stackTrace) {
                             return const SizedBox(width: 50, height: 50);
                           },
                         ),
