@@ -3,7 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 
-import 'package:sonnow/pages/login_page.dart';
+import 'package:sonnow/utils.dart';
+import 'package:sonnow/services/user_library_storage.dart';
 
 
 class AuthService {
@@ -70,6 +71,7 @@ class AuthService {
 
     await prefs.remove("access_token");
     await prefs.remove("refresh_token");
+    await clearAllBoxes();
 
     onLogout();
   }
@@ -131,24 +133,12 @@ class AuthService {
     return false;
   }
 
-
-
   Future<Map<String, dynamic>?> getUserInfo() async {
-    if (!await checkIfLoggedIn()) return null;
-
-    final csrfToken = await getCsrfToken();
-    final token = await getToken("access_token");
-
-    if (token == null) return null; // TODO: Handle this case
+    final Map<String, String> header = await setRequestHeader();
 
     final response = await http.get(
       Uri.parse("${baseUrl}user/info/"),
-      headers: {
-        "Authorization": "Bearer $token",
-        "X-CSRFToken": csrfToken,
-        "Referer": baseUrl,
-        "Cookie": "csrftoken=$csrfToken",
-      },
+      headers: header,
     );
 
     if (response.statusCode == 200) {

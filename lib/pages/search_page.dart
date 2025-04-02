@@ -22,6 +22,7 @@ class _SearchPageState extends State<SearchPage> {
   final List<String> _tags = ['Artist', 'Release'];
   String _selectedTag = "";
   String _searchQuery = "";
+  int _searchId = 0;
 
   @override
   void initState() {
@@ -37,8 +38,9 @@ class _SearchPageState extends State<SearchPage> {
 
   Future<void> _fetchRelease(String query) async {
     try {
+      int searchId = _searchId;
       List<Release> result = await musicApi.searchRelease(query);
-      if (mounted) {
+      if (mounted && searchId == _searchId) {
         setState(() {
           releases = result;
         });
@@ -53,9 +55,10 @@ class _SearchPageState extends State<SearchPage> {
 
   Future<void> _fetchArtist(String query) async {
     try {
+      int searchId = _searchId;
       List<Artist> result = await musicApi.searchArtist(query);
 
-      if (mounted) {
+      if (mounted && searchId == _searchId) {
         setState(() {
           artists = result;
         });
@@ -68,30 +71,34 @@ class _SearchPageState extends State<SearchPage> {
     }
   }
 
-  void onSearchChanged(String query) async {
-    if (_debounce?.isActive ?? false) _debounce!.cancel();
-    _debounce = Timer(const Duration(milliseconds: 500), () async {
-      if (query.isEmpty) {
-        clearSearch();
-        return;
-      }
-      if (_selectedTag == "Artist") await _fetchArtist(query);
-      if (_selectedTag == "Release") await _fetchRelease(query);
-      if (_selectedTag.isEmpty) {
-        Future.wait([
-          _fetchArtist(query),
-          _fetchRelease(query)
-        ]).then((_) {
-          if (mounted) {
-            setState(() {
-              preloadArtistImages(artists);
-              preloadReleaseImages(releases);
-            });
-          }
-        });
-      }
-    });
+void onSearchChanged(String query) {
+  if (query.length < 2) {
+    clearSearch();
+    return;
   }
+
+  if (_debounce?.isActive ?? false) _debounce!.cancel();
+
+  _debounce = Timer(const Duration(milliseconds: 300), () async {
+    print("Searching for: $query");
+    _searchId += 1;
+    if (_selectedTag == "Artist") await _fetchArtist(query);
+    if (_selectedTag == "Release") await _fetchRelease(query);
+    if (_selectedTag.isEmpty) {
+      Future.wait([
+        _fetchArtist(query),
+        _fetchRelease(query)
+      ]).then((_) {
+        if (mounted) {
+          setState(() {
+            preloadArtistImages(artists);
+            preloadReleaseImages(releases);
+          });
+        }
+      });
+    }
+  });
+}
 
   Future<void> preloadArtistImages(List<Artist> artists) async {
     for (var artist in artists) {

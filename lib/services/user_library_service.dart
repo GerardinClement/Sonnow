@@ -5,6 +5,7 @@ import 'package:hive/hive.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:sonnow/services/user_library_storage.dart';
 import 'package:sonnow/models/release.dart';
+import 'package:sonnow/utils.dart';
 
 class UserLibraryService {
   final String baseUrl = "http://10.0.2.2:8000/user/library";
@@ -18,22 +19,6 @@ class UserLibraryService {
     } else {
       throw Exception("Error getting user library");
     }
-  }
-
-  Future<Map<String, String>> setRequestHeader() async {
-    if (!await authService.checkIfLoggedIn()) throw Exception("User not logged in");
-
-    final csrfToken = await authService.getCsrfToken();
-    final token = await authService.getToken("access_token");
-
-    if (token == null) throw Exception("Error with access token");
-
-    return {
-      "Content-Type": "application/json",
-      "X-CSRFToken": csrfToken,
-      "Authorization": "Bearer $token",
-      "Cookie": "csrftoken=$csrfToken",
-    };
   }
 
   Future<List<Release>> fetchUserLikedReleases() async {
@@ -101,7 +86,6 @@ class UserLibraryService {
     }
     removeLikedReleasesFromBox(release.id);
   }
-
 
   Future<bool> checkIfReleaseIsLiked(String releaseId) async {
     var box = await Hive.openBox("liked_releases");

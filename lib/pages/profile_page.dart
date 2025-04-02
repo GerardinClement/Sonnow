@@ -3,6 +3,13 @@ import 'package:sonnow/services/auth_service.dart';
 import 'package:sonnow/pages/library_page.dart';
 import 'package:sonnow/pages/login_page.dart';
 import 'package:sonnow/app.dart';
+import 'package:image_picker/image_picker.dart';
+import 'package:sonnow/services/user_profile_service.dart';
+import 'package:sonnow/models/user.dart';
+import 'package:sonnow/utils.dart';
+import 'package:sonnow/pages/edit_profile_page.dart';
+import 'package:sonnow/pages/settings_page.dart';
+import 'package:sonnow/globals.dart';
 
 class ProfilePage extends StatefulWidget {
   const ProfilePage({super.key});
@@ -11,50 +18,93 @@ class ProfilePage extends StatefulWidget {
   _ProfilePageState createState() => _ProfilePageState();
 }
 
-class _ProfilePageState extends State<ProfilePage> {
-  Future<Map<String, dynamic>?> _fetchUserInfo() async {
-    return await AuthService().getUserInfo();
+class _ProfilePageState extends State<ProfilePage> with RouteAware {
+  final UserProfileService userProfileService = UserProfileService();
+  late User user;
+
+  @override
+  initState() {
+    super.initState();
+    _fetchUserInfo();
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    _fetchUserInfo();
+    routeObserver.subscribe(this, ModalRoute.of(context)!);
+  }
+
+  @override
+  void dispose() {
+    routeObserver.unsubscribe(this);
+    super.dispose();
+  }
+
+  Future<void> _fetchUserInfo() async {
+    user = await userProfileService.fetchUserProfile();
+    if (mounted) {
+      setState(() {
+        user = user;
+      });
+    }
   }
 
   @override
   Widget build(BuildContext context) {
-    return FutureBuilder<Map<String, dynamic>?>(
-      future: _fetchUserInfo(),
-      builder: (context, snapshot) {
-        if (snapshot.connectionState == ConnectionState.waiting) {
-          return Center(child: CircularProgressIndicator());
-        } else if (snapshot.hasError) {
-          return Center(child: Text("Error: ${snapshot.error}"));
-        } else if (!snapshot.hasData) {
-          return Center(child: Text("No user data available."));
-        } else {
-          var userData = snapshot.data;
-          return Scaffold(
-            appBar: AppBar(title: Text("Profile")),
-            body: Column(
-              children: [
-                Text(
-                  'Email: ${userData?['email']}',
-                  style: TextStyle(fontSize: 18),
-                ),
-                ElevatedButton(
-                  onPressed: () {
-                    AuthService().logout(context, () {
-                      Navigator.pushReplacement(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => App(),
-                        ),
-                      );
-                    });
-                  },
-                  child: Text("Logout"),
-                ),
-              ],
+    return Scaffold(
+      appBar: AppBar(
+          title: Text("Profile"),
+          actions: [
+            IconButton(
+              icon: Icon(Icons.edit),
+              onPressed: () {
+                Navigator.of(context).push(
+                  MaterialPageRoute(
+                    builder:
+                        (context) => EditProfilePage(user: user),
+                  ),
+                );
+              },
             ),
-          );
-        }
-      },
+            IconButton(
+              icon: Icon(Icons.settings),
+              onPressed: () {
+                Navigator.of(context).push(
+                  MaterialPageRoute(
+                    builder:
+                        (context) => SettingsPage(),
+                  ),
+                );
+              },
+            ),
+          ]
+      ),
+      body: Column(
+        children: [
+          SizedBox(height: 20),
+          Center(
+            child: CircleAvatar(
+                radius: 100,
+                backgroundImage: NetworkImage(user.profilePictureUrl),
+              ),
+            ),
+          Padding(
+            padding: const EdgeInsets.only(top: 16.0, bottom: 8.0),
+            child: Text(
+              user.displayName,
+              style: TextStyle(fontSize: 35, fontWeight: FontWeight.bold),
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.only(bottom: 8.0),
+            child: Text(
+              user.bio,
+              style: TextStyle(fontSize: 20, color: Colors.grey),
+            ),
+          ),
+        ],
+      ),
     );
   }
 }

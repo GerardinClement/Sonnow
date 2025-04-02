@@ -76,11 +76,13 @@ class AppState extends State<App> {
   }
 
   Future<void> _getLikedReleases() async {
+    clearLikedReleasesBox();
     final List<Release> likedRelease = await userLibraryService.fetchUserLikedReleases();
     await addLikedReleasesInBox(likedRelease);
   }
 
   Future<void> _getToListenReleases() async {
+    clearToListenReleasesBox();
     final List<Release> toListenReleases = await userLibraryService.fetchUserToListenReleases();
     await addToListenReleasesInBox(toListenReleases);
   }

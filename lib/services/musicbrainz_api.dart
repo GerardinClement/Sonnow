@@ -113,7 +113,7 @@ class MusicBrainzApi {
     return _cachedRequest(cacheKey, () async {
       final response = await http.get(
         Uri.parse(
-          "${baseUrl}release-group/?query=release:$releaseName&fmt=json&limit=20",
+          "${baseUrl}release-group/?query=release:$releaseName&fmt=json&limit=10",
         ),
       );
 
@@ -136,7 +136,7 @@ class MusicBrainzApi {
     return _cachedRequest(cacheKey, () async {
       final response = await http.get(
         Uri.parse(
-          "${baseUrl}artist?query=artist:$artistName&fmt=json&inc=url-rels&limits=10",
+          "${baseUrl}artist?query=artist:$artistName&fmt=json&inc=url-rels&limit=10",
         ),
       );
 

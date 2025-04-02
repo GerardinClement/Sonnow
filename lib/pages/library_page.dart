@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:sonnow/services/user_library_service.dart';
 import 'package:sonnow/models/release.dart';
+import 'package:sonnow/services/user_library_storage.dart';
 import 'package:sonnow/views/release_card_view.dart';
 import 'package:sonnow/main.dart';
 import 'package:sonnow/globals.dart';
+import 'package:sonnow/pages/list_releases_page.dart';
 
 class LibraryPage extends StatefulWidget {
   const LibraryPage({super.key});
@@ -90,7 +92,14 @@ class _LibraryPageState extends State<LibraryPage> with RouteAware {
                 ),
                 Center(
                   child: likedReleases.length > 3 ? IconButton(
-                    onPressed: () => print("test"),
+                    onPressed: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => ListReleasesPage(releases: likedReleases),
+                        ),
+                      );
+                    },
                     icon: const Icon(Icons.add_circle_outline_sharp),
                   ): const SizedBox(),
                 ),
@@ -123,7 +132,15 @@ class _LibraryPageState extends State<LibraryPage> with RouteAware {
                 ),
                 Center(
                   child: toListenReleases.length > 3 ? IconButton(
-                    onPressed: () => print("test"),
+                    onPressed: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => ListReleasesPage(releases: toListenReleases),
+                        ),
+                      );
+
+                    },
                     icon: const Icon(Icons.add_circle_outline_sharp),
                   ): const SizedBox(),
                 ),

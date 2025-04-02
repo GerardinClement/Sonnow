@@ -37,6 +37,9 @@ ALLOWED_HOSTS = [
 
 # Application definition
 
+MEDIA_URL = '/media/'
+MEDIA_ROOT = BASE_DIR / 'media'
+
 INSTALLED_APPS = [
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -52,6 +55,7 @@ INSTALLED_APPS = [
 
     'reviews',
     'user_library',
+    'user_profile',
     'releases',
 ]
 

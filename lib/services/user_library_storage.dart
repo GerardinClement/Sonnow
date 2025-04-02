@@ -29,3 +29,21 @@ Future<void> removeToListenReleasesFromBox(String releaseId) async {
 
   box.delete(releaseId);
 }
+
+Future<void> clearAllBoxes() async {
+  var likedReleasesBox = await Hive.openBox("liked_releases");
+  var toListenReleasesBox = await Hive.openBox("to_listen_releases");
+
+  await likedReleasesBox.clear();
+  await toListenReleasesBox.clear();
+}
+
+Future<void> clearToListenReleasesBox() async {
+  var toListenReleasesBox = await Hive.openBox("to_listen_releases");
+  await toListenReleasesBox.clear();
+}
+
+Future<void> clearLikedReleasesBox() async {
+  var likedReleasesBox = await Hive.openBox("liked_releases");
+  await likedReleasesBox.clear();
+}
