@@ -4,11 +4,17 @@ class Artist {
   final String name;
   final String id;
   final String tag;
-  String imageUrl = "";
+  late final String imageUrl;
   Map<String, List<Release>> releaseByType = {};
   List<Release> releases = [];
+  bool isLiked = false;
 
-  Artist({required this.name, required this.id, required this.tag});
+  Artist({
+    required this.name,
+    required this.id,
+    required this.tag,
+    required this.imageUrl,
+  });
 
   void setImageUrl(String url) {
     imageUrl = url;
@@ -20,20 +26,16 @@ class Artist {
   }
 
   void setReleasesByType(List<Release> releases) {
+    releaseByType["Album"] = [];
+    releaseByType["Single"] = [];
+
     for (var release in releases) {
-      if (releaseByType.containsKey(release.type)) {
-        releaseByType[release.type]?.add(release);
+      if (release.type == "single") {
+        releaseByType["Single"]?.add(release);
       } else {
-        releaseByType[release.type] = [release];
+        releaseByType["Album"]?.add(release);
       }
     }
-
-    releaseByType = Map.fromEntries(
-      releaseByType.entries.toList()..sort((a, b) {
-        const order = ['single', 'ep', 'album'];
-        return order.indexOf(a.key).compareTo(order.indexOf(b.key));
-      }),
-    );
   }
 
   factory Artist.fromJson(Map<String, dynamic> json) {
@@ -41,6 +43,7 @@ class Artist {
       name: json['name']?.toString() ?? "Unknown",
       id: json['id']?.toString() ?? "Unknown",
       tag: json['disambiguation']?.toString() ?? "Unknown",
+      imageUrl: json['picture_medium']?.toString() ?? json['image_url']?.toString() ?? "",
     );
   }
 }

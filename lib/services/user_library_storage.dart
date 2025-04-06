@@ -30,12 +30,24 @@ Future<void> removeToListenReleasesFromBox(String releaseId) async {
   box.delete(releaseId);
 }
 
-Future<void> clearAllBoxes() async {
-  var likedReleasesBox = await Hive.openBox("liked_releases");
-  var toListenReleasesBox = await Hive.openBox("to_listen_releases");
+Future<void> addLikedArtistsInBox(List<String> likedArtists) async {
+  var box = await Hive.openBox("liked_artists");
 
-  await likedReleasesBox.clear();
-  await toListenReleasesBox.clear();
+  for (var artist in likedArtists) {
+    box.put(artist, true);
+  }
+}
+
+Future<void> removeLikedArtistsFromBox(String artistId) async {
+  var box = await Hive.openBox("liked_artists");
+
+  box.delete(artistId);
+}
+
+Future<void> clearAllBoxes() async {
+  clearToListenReleasesBox()
+      .then((_) => clearLikedReleasesBox())
+      .then((_) => clearLikedArtistsBox());
 }
 
 Future<void> clearToListenReleasesBox() async {
@@ -46,4 +58,9 @@ Future<void> clearToListenReleasesBox() async {
 Future<void> clearLikedReleasesBox() async {
   var likedReleasesBox = await Hive.openBox("liked_releases");
   await likedReleasesBox.clear();
+}
+
+Future<void> clearLikedArtistsBox() async {
+  var likedArtistsBox = await Hive.openBox("liked_artists");
+  await likedArtistsBox.clear();
 }

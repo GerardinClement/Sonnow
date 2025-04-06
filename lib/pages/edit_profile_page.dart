@@ -4,7 +4,6 @@ import 'package:flutter/material.dart';
 import 'package:sonnow/services/user_profile_service.dart';
 import 'package:sonnow/models/user.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:sonnow/views/release_card_view.dart';
 
 class EditProfilePage extends StatefulWidget {
   final User user;

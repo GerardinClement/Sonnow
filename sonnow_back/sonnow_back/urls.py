@@ -24,6 +24,7 @@ urlpatterns = [
     path('review/', include('reviews.urls')),
     path('user/library/', include('user_library.urls')),
     path('release/', include('releases.urls')),
+    path('artist/', include('artists.urls')),
     path('profile/', include('user_profile.urls')),
 ]
 

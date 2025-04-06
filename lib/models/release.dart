@@ -1,16 +1,17 @@
-import 'package:flutter/cupertino.dart';
 import 'package:sonnow/models/track.dart';
+import 'package:sonnow/models/artist.dart';
 import 'package:sonnow/services/musicbrainz_api.dart';
 
 class Release {
   final String id;
   final String title;
-  final String artist;
+  final Artist artist;
   final String date;
   final String type;
   final String primaryReleaseId;
   final List<String> releasesIds;
   late List<Track> tracklist;
+  late final String tracklistUrl;
   late String imageUrl;
   late bool isLiked = false;
   late bool toListen = false;
@@ -26,6 +27,7 @@ class Release {
     required this.imageUrl,
     required this.releasesIds,
     this.tracklist = const [],
+    this.tracklistUrl = "",
   });
 
   void setTracklist(List<Track> tracks) {
@@ -56,12 +58,10 @@ class Release {
       }
     }
 
-
-
     return Release(
       id: id,
       title: json['title']?.toString() ?? "Unknown",
-      artist: artistName,
+      artist: Artist(name: "", id: "", tag: "", imageUrl: ""),
       date: json['first-release-date']?.toString() ?? "Unknown",
       type: type,
       primaryReleaseId: primaryReleaseId,
@@ -82,7 +82,7 @@ class Release {
     return Release(
       id: release['release_id']?.toString() ?? "Unknown",
       title: release['title']?.toString() ?? "Unknown",
-      artist: release['artist']?.toString() ?? "Unknown",
+      artist: Artist(name: "", id: "", tag: "", imageUrl: ""),
       date: release['release_date']?.toString() ?? "Unknown",
       type: release['type']?.toString() ?? "Unknown",
       primaryReleaseId: release['primary_release_id']?.toString() ?? "Unknown",
@@ -98,5 +98,42 @@ class Release {
         imageUrl = "https://coverartarchive.org/release/$release/front";
       }
     }
+  }
+
+  factory Release.fromJsonDeezer(Map<String, dynamic> json) {
+    return Release(
+      id: json['id']?.toString() ?? "Unknown",
+      title: json['title']?.toString() ?? "Unknown",
+      artist: Artist.fromJson(json['artist']),
+      date: json['release_date']?.toString() ?? "Unknown",
+      type: json['type']?.toString() ?? "Unknown",
+      primaryReleaseId: json['id']?.toString() ?? "Unknown",
+      imageUrl: json['album']['cover_medium']?.toString() ?? "Unknown",
+      releasesIds: [],
+    );
+  }
+
+  factory Release.fromJsonAlbumFromDeezer(Map<String, dynamic> json, dynamic artist) {
+    Artist artistObject;
+
+    if (artist is Artist) {
+      artistObject = artist;
+    } else if (artist is Map<String, dynamic>) {
+      artistObject = Artist.fromJson(artist);
+    } else {
+      artistObject = Artist(name: "Unknown", id: "Unknown", tag: "", imageUrl: "");
+    }
+
+    return Release(
+      id: json['id']?.toString() ?? "Unknown",
+      title: json['title']?.toString() ?? "Unknown",
+      artist: artistObject,
+      type: json['record_type']?.toString() ?? json['type']?.toString() ?? "Unknown",
+      date: json['release_date']?.toString() ?? "Unknown",
+      primaryReleaseId: "",
+      imageUrl: json['cover_medium']?.toString() ?? "Unknown",
+      releasesIds: [],
+      tracklistUrl: json['tracklist']?.toString() ?? "Unknown",
+    );
   }
 }

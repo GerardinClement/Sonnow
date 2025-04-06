@@ -107,13 +107,14 @@ class MusicBrainzApi {
     }
   }
 
-  Future<List<Release>> searchRelease(String releaseName) async {
-    final cacheKey = "searchRelease:$releaseName";
+  Future<List<Release>> searchRelease(String releaseName, bool limited) async {
+    final String limit = limited ? "2" : "10";
+    final cacheKey = "searchRelease:${releaseName}_$limit";
 
     return _cachedRequest(cacheKey, () async {
       final response = await http.get(
         Uri.parse(
-          "${baseUrl}release-group/?query=release:$releaseName&fmt=json&limit=10",
+          "${baseUrl}release-group/?query=release:$releaseName&fmt=json&limit=$limit",
         ),
       );
 
@@ -130,13 +131,14 @@ class MusicBrainzApi {
     });
   }
 
-  Future<List<Artist>> searchArtist(String artistName) async {
+  Future<List<Artist>> searchArtist(String artistName, bool limited) async {
     final cacheKey = "searchArtist:$artistName";
+    final String limit = limited ? "2" : "10";
 
     return _cachedRequest(cacheKey, () async {
       final response = await http.get(
         Uri.parse(
-          "${baseUrl}artist?query=artist:$artistName&fmt=json&inc=url-rels&limit=10",
+          "${baseUrl}artist?query=artist:$artistName&fmt=json&inc=url-rels&limit=$limit",
         ),
       );
 
@@ -158,6 +160,26 @@ class MusicBrainzApi {
         throw Exception("Error searching artist");
       }
     });
+  }
+
+  Future<List<Release>> getLatestReleases() async {
+    final String lastReleaseDate = "${DateTime.now().year}-${DateTime.now().month.toString().padLeft(2, '0')}-${DateTime.now().day.toString().padLeft(2, '0')}";
+    final response = await http.get(
+      Uri.parse(
+        "${baseUrl}release-group/?query=firstreleasedate:$lastReleaseDate&fmt=json",
+      ),
+    );
+
+    if (response.statusCode == 200) {
+      List<Release> releases =
+          (json.decode(response.body)['release-groups'] as List)
+              .map((release) => Release.fromSearchJson(release))
+              .toList();
+
+      return releases;
+    } else {
+      throw Exception("Error searching release");
+    }
   }
 
   Future<String?> getArtistImageFromDeezer(String artistName) async {

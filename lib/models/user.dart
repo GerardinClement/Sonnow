@@ -1,5 +1,3 @@
-import 'dart:ui';
-import 'package:sonnow/models/release.dart';
 
 class User {
   final String username;

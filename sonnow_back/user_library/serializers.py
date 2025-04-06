@@ -2,6 +2,8 @@ from rest_framework import serializers
 from .models import LikedRelease, ToListenRelease, LikedArtist
 from releases.serializers import ReleaseSerializer
 from releases.models import Release
+from artists.serializers import ArtistSerializer
+from artists.models import Artist
 
 class LikedReleaseSerializer(serializers.ModelSerializer):
     release = ReleaseSerializer(read_only=True)
@@ -17,14 +19,19 @@ class LikedReleaseSerializer(serializers.ModelSerializer):
         return super().create(validated_data)
 
 class LikedArtistSerializer(serializers.ModelSerializer):
+    artist = ArtistSerializer(read_only=True)
+
     class Meta:
         model = LikedArtist
-        fields = ['id', 'user', 'artist_id', 'date_added']
+        fields = ['id', 'user', 'artist', 'date_added']
         read_only_fields = ['user', 'date_added']
 
     def create(self, validated_data):
-        validated_data['user'] = self.context['request'].user
-        return super().create(validated_data)
+        request = self.context['request']
+        artist_id = self._kwargs['data']['id']['id']
+        artist = Artist.objects.get(id=artist_id)
+        liked_artist = LikedArtist.objects.create(user=request.user, artist=artist)
+        return liked_artist
 
 class ToListenSerializer(serializers.ModelSerializer):
     release = ReleaseSerializer(read_only=True)

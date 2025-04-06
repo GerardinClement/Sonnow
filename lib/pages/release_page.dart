@@ -3,6 +3,7 @@ import 'package:sonnow/models/release.dart';
 import 'package:sonnow/models/artist.dart';
 import 'package:sonnow/models/review.dart';
 import 'package:sonnow/models/track.dart';
+import 'package:sonnow/services/deezer_api.dart';
 import 'package:sonnow/services/musicbrainz_api.dart';
 import 'package:sonnow/services/review_service.dart';
 import 'package:flutter_rating_stars/flutter_rating_stars.dart';
@@ -64,7 +65,10 @@ class _ReleasePageState extends State<ReleasePage> {
 
   Future<void> _fetchRelease(Release release) async {
     try {
-      await musicApi.getReleaseTracklist(release);
+      final List<Track> tracklist = await DeezerApi.getAlbumTracks(
+        release.id,
+      );
+      release.setTracklist(tracklist);
       setState(() {
         release = release;
       });
@@ -194,7 +198,7 @@ class _ReleasePageState extends State<ReleasePage> {
   }
 
   Widget buildModalTrackDetail(Track track) {
-    return Container(
+    return SizedBox(
       width: double.infinity,
       child: Padding(
         padding: const EdgeInsets.all(16.0),
@@ -257,17 +261,12 @@ class _ReleasePageState extends State<ReleasePage> {
     );
   }
 
-  String getArtistNames(List<Artist> artists, String joinPhrase) {
+  String getArtistNames(List<Artist> artists) {
     if (artists.length == 1) return artists[0].name;
     if (artists.length > 1) {
       String phrase = "";
       for (int i = 0; i < artists.length; i++) {
-        phrase += artists[i].name;
-        if (i == 0) {
-          phrase += " $joinPhrase ";
-        } else if (i != artists.length - 1) {
-          phrase += ", ";
-        }
+        phrase += artists[i].name + (i == artists.length - 1 ? "" : ", ");
       }
       return phrase;
     }
@@ -279,7 +278,29 @@ class _ReleasePageState extends State<ReleasePage> {
     return DefaultTabController(
       length: 2,
       child: Scaffold(
-        appBar: AppBar(title: Text("Release Page")),
+        appBar: AppBar(
+          title: Text("Release Page"),
+          actions: [
+            IconButton(
+              onPressed: () {
+                toggleLike();
+              },
+              icon: Icon(
+                release.isLiked ? Icons.favorite : Icons.favorite_border,
+              ),
+            ),
+            IconButton(
+              onPressed: () {
+                toggleToListen();
+              },
+              icon: Icon(
+                release.toListen
+                    ? Icons.add_circle
+                    : Icons.add_circle_outline_outlined,
+              ),
+            ),
+          ],
+        ),
         body: Padding(
           padding: const EdgeInsets.all(16.0),
           child: Column(
@@ -306,27 +327,13 @@ class _ReleasePageState extends State<ReleasePage> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(release.title, style: TextStyle(fontSize: 18)),
-                        Text(release.artist, style: TextStyle(fontSize: 18)),
+                        Text(
+                          release.artist.name,
+                          style: TextStyle(fontSize: 18),
+                        ),
                         Text(release.type, style: TextStyle(fontSize: 18)),
                         Text(release.date, style: TextStyle(fontSize: 18)),
                       ],
-                    ),
-                  ),
-                  SizedBox(width: 20),
-                  IconButton(
-                    onPressed: () {
-                      toggleLike();
-                    },
-                    icon: Icon(
-                      release.isLiked ? Icons.favorite : Icons.favorite_border,
-                    ),
-                  ),
-                  IconButton(
-                    onPressed: () {
-                      toggleToListen();
-                    },
-                    icon: Icon(
-                      release.toListen ? Icons.add_circle : Icons.add_circle_outline_outlined,
                     ),
                   ),
                 ],
@@ -361,10 +368,7 @@ class _ReleasePageState extends State<ReleasePage> {
                             ),
                             title: Text(release.tracklist[index].title),
                             subtitle: Text(
-                              getArtistNames(
-                                release.tracklist[index].artist,
-                                release.tracklist[index].joinPhrase,
-                              ),
+                              getArtistNames(release.tracklist[index].artist),
                             ),
                           ),
                         );

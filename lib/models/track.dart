@@ -59,7 +59,18 @@ class Track {
       artist: artist,
       date: json['date']?.toString() ?? "Unknown",
       position: json['position'] ?? 0,
-      joinPhrase: joinPhrase,
+    );
+  }
+
+  factory Track.fromDeezerJson(Map<String, dynamic> json) {
+    return Track(
+      id: json['id']?.toString() ?? "Unknown",
+      title: json['title']?.toString() ?? "Unknown",
+      artist: json['contributors'] != null
+          ? (json['contributors'] as List).map((e) => Artist.fromJson(e)).toList()
+          : [Artist.fromJson(json['artist'])],
+      date: json['release_date']?.toString() ?? "Unknown",
+      position: json['position'] ?? 0,
     );
   }
 }

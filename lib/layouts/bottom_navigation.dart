@@ -1,4 +1,3 @@
-import 'package:sonnow/app.dart';
 import 'package:flutter/material.dart';
 import 'package:sonnow/models/tab_item.dart';
 
@@ -6,7 +5,7 @@ class BottomNavigation extends StatelessWidget {
   final ValueChanged<int> onSelectTab;
   final List<TabItem> tabs;
 
-  BottomNavigation({required this.onSelectTab, required this.tabs});
+  const BottomNavigation({super.key, required this.onSelectTab, required this.tabs});
 
   @override
   Widget build(BuildContext context) {

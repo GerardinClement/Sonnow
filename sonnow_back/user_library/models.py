@@ -11,11 +11,11 @@ class LikedRelease(models.Model):
 
 class LikedArtist(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
-    artist_id = models.CharField(max_length=100)
+    artist = models.ForeignKey('artists.Artist', on_delete=models.CASCADE)
     date_added = models.DateTimeField(auto_now_add=True)
 
     class Meta:
-        unique_together = ('user', 'artist_id',)
+        unique_together = ('user', 'artist',)
 
 class ToListenRelease(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)

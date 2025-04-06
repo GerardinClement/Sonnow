@@ -3,6 +3,7 @@ import 'package:sonnow/pages/login_page.dart';
 import 'package:sonnow/pages/profile_page.dart';
 import 'package:sonnow/pages/search_page.dart';
 import 'package:sonnow/pages/library_page.dart';
+import 'package:sonnow/pages/home_page.dart';
 import 'package:sonnow/services/auth_service.dart';
 import 'package:sonnow/services/user_library_service.dart';
 import 'package:sonnow/services/user_library_storage.dart';
@@ -11,7 +12,6 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:sonnow/models/tab_item.dart';
 import 'package:sonnow/layouts/bottom_navigation.dart';
 import 'package:sonnow/globals.dart';
-
 
 class App extends StatefulWidget {
   const App({super.key});
@@ -44,6 +44,12 @@ class AppState extends State<App> {
       page: LibraryPage(),
       index: 2,
     ),
+    TabItem(
+      tabName: "Home",
+      icon: Icons.home,
+      page: HomePage(),
+      index: 3,
+    ),
   ];
 
   void _selectTab(int index) {
@@ -55,8 +61,7 @@ class AppState extends State<App> {
 
     if (tabs[index].tabName == 'Library') {
       libraryRefreshNotifier.value = true;
-    }
-    else {
+    } else {
       libraryRefreshNotifier.value = false;
     }
   }
@@ -77,13 +82,15 @@ class AppState extends State<App> {
 
   Future<void> _getLikedReleases() async {
     clearLikedReleasesBox();
-    final List<Release> likedRelease = await userLibraryService.fetchUserLikedReleases();
+    final List<Release> likedRelease =
+        await userLibraryService.fetchUserLikedReleases();
     await addLikedReleasesInBox(likedRelease);
   }
 
   Future<void> _getToListenReleases() async {
     clearToListenReleasesBox();
-    final List<Release> toListenReleases = await userLibraryService.fetchUserToListenReleases();
+    final List<Release> toListenReleases =
+        await userLibraryService.fetchUserToListenReleases();
     await addToListenReleasesInBox(toListenReleases);
   }
 
@@ -101,18 +108,19 @@ class AppState extends State<App> {
 
   @override
   Widget build(BuildContext context) {
-    if (!isLogin) {
-      return LoginPage(
-        onLoginSuccess: onLoginSuccess,
-      );
-    }
+    return MaterialApp(
+      home:
+          isLogin ? _buildMainApp() : LoginPage(onLoginSuccess: onLoginSuccess),
+    );
+  }
+
+  Widget _buildMainApp() {
     return PopScope(
       child: Scaffold(
         body: IndexedStack(
           index: currentTab,
           children: tabs.map((e) => e.page).toList(),
         ),
-        // Bottom navigation
         bottomNavigationBar: BottomNavigation(
           onSelectTab: _selectTab,
           tabs: tabs,

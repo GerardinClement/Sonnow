@@ -57,7 +57,7 @@ class ReleaseListView extends StatelessWidget {
                 ),
               ),
               title: Text(releases[index].title),
-              subtitle: Text(releases[index].artist),
+              subtitle: Text(releases[index].artist.name),
             ),
           );
         },

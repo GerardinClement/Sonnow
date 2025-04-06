@@ -4,8 +4,10 @@ import 'package:flutter/material.dart';
 import 'package:sonnow/models/artist.dart';
 import 'package:sonnow/models/release.dart';
 import 'package:sonnow/services/musicbrainz_api.dart';
+import 'package:sonnow/utils.dart';
 import 'package:sonnow/views/release_list_view.dart';
 import 'package:sonnow/views/artist_list_view.dart';
+import 'package:sonnow/services/deezer_api.dart';
 
 class SearchPage extends StatefulWidget {
   const SearchPage({super.key});
@@ -16,10 +18,12 @@ class SearchPage extends StatefulWidget {
 
 class _SearchPageState extends State<SearchPage> {
   final MusicBrainzApi musicApi = MusicBrainzApi();
+  final DeezerApi deezerApi = DeezerApi();
   List<Release> releases = [];
   List<Artist> artists = [];
+  List<Release> albums = [];
   Timer? _debounce;
-  final List<String> _tags = ['Artist', 'Release'];
+  final List<String> _tags = ['Artist', 'Album', 'Track'];
   String _selectedTag = "";
   String _searchQuery = "";
   int _searchId = 0;
@@ -36,27 +40,42 @@ class _SearchPageState extends State<SearchPage> {
     });
   }
 
-  Future<void> _fetchRelease(String query) async {
+  Future<void> _fetchGlobal(String query, bool limited) async {
     try {
       int searchId = _searchId;
-      List<Release> result = await musicApi.searchRelease(query);
+      List<Release> result = await DeezerApi.searchGlobal(query);
+      List<Artist> artistsResult = [];
+      List<Release> albumsResult = [];
+      for (var release in result) {
+        if (!artistsResult.any((artist) => artist.id == release.artist.id)) {
+          artistsResult.add(release.artist);
+        }
+        if (release.type == "album") {
+          albumsResult.add(release);
+        }
+      }
+
+      artistsResult = sortArtists(artistsResult, _searchQuery);
+      albumsResult = sortReleases(albumsResult, artistsResult[0].name);
+      result = sortReleases(result, artistsResult[0].name);
       if (mounted && searchId == _searchId) {
         setState(() {
           releases = result;
+          artists = artistsResult;
+          albums = albumsResult;
         });
       }
     } catch (e) {
-      print(e);
       setState(() {
         releases = [];
       });
     }
   }
 
-  Future<void> _fetchArtist(String query) async {
+  Future<void> _fetchArtist(String query, bool limited) async {
     try {
       int searchId = _searchId;
-      List<Artist> result = await musicApi.searchArtist(query);
+      List<Artist> result = await DeezerApi.searchArtists(query);
 
       if (mounted && searchId == _searchId) {
         setState(() {
@@ -64,9 +83,25 @@ class _SearchPageState extends State<SearchPage> {
         });
       }
     } catch (e) {
-      print(e);
       setState(() {
         artists = [];
+      });
+    }
+  }
+
+  Future<void> _fetchAlbum(String query, bool limited) async {
+    try {
+      int searchId = _searchId;
+      List<Release> result = await DeezerApi.searchAlbums(query);
+
+      if (mounted && searchId == _searchId) {
+        setState(() {
+          albums = result;
+        });
+      }
+    } catch (e) {
+      setState(() {
+        releases = [];
       });
     }
   }
@@ -82,12 +117,12 @@ void onSearchChanged(String query) {
   _debounce = Timer(const Duration(milliseconds: 300), () async {
     print("Searching for: $query");
     _searchId += 1;
-    if (_selectedTag == "Artist") await _fetchArtist(query);
-    if (_selectedTag == "Release") await _fetchRelease(query);
+    if (_selectedTag == "Artist") await _fetchArtist(query, false);
+    if (_selectedTag == "Album") await _fetchAlbum(query, false);
     if (_selectedTag.isEmpty) {
       Future.wait([
-        _fetchArtist(query),
-        _fetchRelease(query)
+        // _fetchArtist(query, true),
+        _fetchGlobal(query, true)
       ]).then((_) {
         if (mounted) {
           setState(() {
@@ -155,19 +190,6 @@ void onSearchChanged(String query) {
                 }).toList(),
               ),
             ),
-            if (_selectedTag == "Release" || _selectedTag.isEmpty) ...[
-              Padding(
-                padding: const EdgeInsets.all(8.0),
-                child: Text(
-                  "Release",
-                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                ),
-              ),
-              ReleaseListView(
-                releases: releases,
-                shrinkWrap: _selectedTag != "Release",
-              ),
-            ],
             if (_selectedTag == "Artist" || _selectedTag.isEmpty) ...[
               Padding(
                 padding: const EdgeInsets.all(8.0),
@@ -179,6 +201,32 @@ void onSearchChanged(String query) {
               ArtistListView(
                 artists: artists,
                 shrinkWrap: _selectedTag != "Artist",
+              ),
+            ],
+            if (_selectedTag == "Album" || _selectedTag.isEmpty) ...[
+              Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: Text(
+                  "Albums",
+                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                ),
+              ),
+              ReleaseListView(
+                releases: albums,
+                shrinkWrap: _selectedTag != "Album",
+              ),
+            ],
+            if (_selectedTag == "Track" || _selectedTag.isEmpty) ...[
+              Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: Text(
+                  "Track",
+                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                ),
+              ),
+              ReleaseListView(
+                releases: releases,
+                shrinkWrap: _selectedTag != "Track",
               ),
             ],
           ],

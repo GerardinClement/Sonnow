@@ -57,6 +57,7 @@ INSTALLED_APPS = [
     'user_library',
     'user_profile',
     'releases',
+    'artists',
 ]
 
 REST_FRAMEWORK = {

@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:sonnow/services/auth_service.dart';
-import 'package:sonnow/pages/profile_page.dart';
 
 class LoginPage extends StatefulWidget {
   final Function onLoginSuccess;
