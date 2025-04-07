@@ -1,3 +1,5 @@
+import 'package:sonnow/models/artist.dart';
+import 'package:sonnow/models/release.dart';
 
 class User {
   final String username;
@@ -5,6 +7,8 @@ class User {
   final String email;
   final String profilePictureUrl;
   final String bio;
+  final Artist? highlightArtist;
+  final Release? highlightRelease;
 
 
   User({
@@ -13,7 +17,8 @@ class User {
     required this.email,
     required this.profilePictureUrl,
     required this.bio,
-
+    required this.highlightArtist,
+    required this.highlightRelease,
   });
 
   factory User.fromJson(Map<String, dynamic> json) {
@@ -24,6 +29,12 @@ class User {
       email: json['email']?.toString() ?? "Unknown",
       profilePictureUrl: json['profile_picture']?.toString() ?? "",
       bio: json['bio']?.toString() ?? "",
+      highlightArtist: json['highlighted_artist'] != null
+          ? Artist.fromJson(json['highlighted_artist'])
+          : null,
+      highlightRelease: json['highlighted_release'] != null
+          ? Release.fromJson(json['highlighted_release'])
+          : null,
     );
   }
 }

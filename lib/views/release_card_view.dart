@@ -37,7 +37,15 @@ class ReleaseCard extends StatelessWidget {
               ),
             ),
             SizedBox(height: 8),
-            Text(release.title),
+            SizedBox(
+              width: 100,
+              child: Text(
+                release.title,
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+                textAlign: TextAlign.center,
+              ),
+            ),
           ],
         ),
       ),

@@ -3,7 +3,6 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:sonnow/models/artist.dart';
 import 'package:sonnow/models/release.dart';
-import 'package:sonnow/services/musicbrainz_api.dart';
 import 'package:sonnow/utils.dart';
 import 'package:sonnow/views/release_list_view.dart';
 import 'package:sonnow/views/artist_list_view.dart';
@@ -17,7 +16,6 @@ class SearchPage extends StatefulWidget {
 }
 
 class _SearchPageState extends State<SearchPage> {
-  final MusicBrainzApi musicApi = MusicBrainzApi();
   final DeezerApi deezerApi = DeezerApi();
   List<Release> releases = [];
   List<Artist> artists = [];

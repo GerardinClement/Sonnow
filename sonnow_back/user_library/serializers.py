@@ -15,7 +15,7 @@ class LikedReleaseSerializer(serializers.ModelSerializer):
 
     def create(self, validated_data):
         validated_data['user'] = self.context['request'].user
-        validated_data['release'] = Release.objects.get(release_id=self._kwargs['data']['release']['release_id'])
+        validated_data['release'] = Release.objects.get(id=self._kwargs['data']['release']['id'])
         return super().create(validated_data)
 
 class LikedArtistSerializer(serializers.ModelSerializer):
@@ -43,5 +43,5 @@ class ToListenSerializer(serializers.ModelSerializer):
 
     def create(self, validated_data):
         validated_data['user'] = self.context['request'].user
-        validated_data['release'] = Release.objects.get(release_id=self._kwargs['data']['release']['release_id'])
+        validated_data['release'] = Release.objects.get(id=self._kwargs['data']['release']['id'])
         return super().create(validated_data)

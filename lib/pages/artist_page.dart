@@ -2,11 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:sonnow/models/artist.dart';
 import 'package:sonnow/pages/list_releases_page.dart';
 import 'package:sonnow/services/deezer_api.dart';
-import 'package:sonnow/services/musicbrainz_api.dart';
 import 'package:sonnow/services/user_library_storage.dart';
+import 'package:sonnow/services/user_profile_service.dart';
 import 'package:sonnow/views/release_card_view.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:sonnow/services/user_library_service.dart';
+import 'package:sonnow/services/user_profile_service.dart';
 
 class ArtistPage extends StatefulWidget {
   final Artist artist;
@@ -18,8 +19,8 @@ class ArtistPage extends StatefulWidget {
 }
 
 class _ArtistPageState extends State<ArtistPage> {
-  final MusicBrainzApi musicApi = MusicBrainzApi();
   final UserLibraryService userLibraryService = UserLibraryService();
+  final UserProfileService userProfileService = UserProfileService();
 
   late Artist artist;
   late bool isLoading;
@@ -68,6 +69,14 @@ class _ArtistPageState extends State<ArtistPage> {
     }
   }
 
+  Future<void> addHighlightedArtists() async {
+    try {
+      await userProfileService.setHighlightedArtist(artist);
+    } catch (e) {
+      print(e);
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -79,6 +88,12 @@ class _ArtistPageState extends State<ArtistPage> {
               toggleLike();
             },
             icon: Icon(artist.isLiked ? Icons.favorite : Icons.favorite_border),
+          ),
+          IconButton(
+            onPressed: () {
+              addHighlightedArtists();
+            },
+            icon: Icon(Icons.highlight),
           ),
         ],
       ),

@@ -1,10 +1,14 @@
 import 'package:sonnow/models/user.dart';
+import 'package:sonnow/services/user_library_service.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:sonnow/utils.dart';
+import 'package:sonnow/models/artist.dart';
+import 'package:sonnow/models/release.dart';
 
 class UserProfileService {
   final String baseUrl = "http://10.0.2.2:8000/profile";
+  final UserLibraryService userLibraryService = UserLibraryService();
 
   Future<User> fetchUserProfile() async {
     Map<String, String> header = await setRequestHeader();
@@ -43,6 +47,48 @@ class UserProfileService {
       return User.fromJson(json.decode(responseData));
     } else {
       throw Exception("Error updating user profile image");
+    }
+  }
+
+  Future<void> setHighlightedArtist(Artist artist) async {
+    Map<String, String> header = await setRequestHeader();
+
+    await userLibraryService.getOrCreateArtist(artist);
+    final request = http.MultipartRequest(
+      'PUT',
+      Uri.parse("$baseUrl/"),
+    );
+
+    request.headers.addAll(header);
+    request.fields['highlighted_artist_id'] = artist.id;
+    final response = await request.send();
+
+    if (response.statusCode == 200) {
+      final responseData = await response.stream.bytesToString();
+      print("Highlighted artist set successfully: $responseData");
+    } else {
+      throw Exception("Error setting highlighted artist");
+    }
+  }
+
+  Future<void> setHighlightedRelease(Release release) async {
+    Map<String, String> header = await setRequestHeader();
+
+    await userLibraryService.getOrCreateRelease(release);
+    final request = http.MultipartRequest(
+      'PUT',
+      Uri.parse("$baseUrl/"),
+    );
+
+    request.headers.addAll(header);
+    request.fields['highlighted_release_id'] = release.id;
+    final response = await request.send();
+
+    if (response.statusCode == 200) {
+      final responseData = await response.stream.bytesToString();
+      print("Highlighted release set successfully: $responseData");
+    } else {
+      throw Exception("Error setting highlighted release");
     }
   }
 }

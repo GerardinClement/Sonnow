@@ -4,11 +4,11 @@ import 'package:sonnow/models/artist.dart';
 import 'package:sonnow/models/review.dart';
 import 'package:sonnow/models/track.dart';
 import 'package:sonnow/services/deezer_api.dart';
-import 'package:sonnow/services/musicbrainz_api.dart';
 import 'package:sonnow/services/review_service.dart';
 import 'package:flutter_rating_stars/flutter_rating_stars.dart';
 import 'package:sonnow/services/user_library_service.dart';
 import 'package:sonnow/services/user_library_storage.dart';
+import 'package:sonnow/services/user_profile_service.dart';
 
 class ReleasePage extends StatefulWidget {
   final Release release;
@@ -20,9 +20,9 @@ class ReleasePage extends StatefulWidget {
 }
 
 class _ReleasePageState extends State<ReleasePage> {
-  final MusicBrainzApi musicApi = MusicBrainzApi();
   final ReviewService reviewService = ReviewService();
   final UserLibraryService userLibraryService = UserLibraryService();
+  final UserProfileService userProfileService = UserProfileService();
 
   List<Review> reviews = [];
   late Release release;
@@ -65,9 +65,7 @@ class _ReleasePageState extends State<ReleasePage> {
 
   Future<void> _fetchRelease(Release release) async {
     try {
-      final List<Track> tracklist = await DeezerApi.getAlbumTracks(
-        release.id,
-      );
+      final List<Track> tracklist = await DeezerApi.getAlbumTracks(release.id);
       release.setTracklist(tracklist);
       setState(() {
         release = release;
@@ -82,17 +80,6 @@ class _ReleasePageState extends State<ReleasePage> {
       List<Review> result = await reviewService.getReviews(id);
       setState(() {
         reviews = result;
-      });
-    } catch (e) {
-      print(e);
-    }
-  }
-
-  Future<void> _fetchTrack(Track track) async {
-    try {
-      await musicApi.getTrackDetail(track);
-      setState(() {
-        track = track;
       });
     } catch (e) {
       print(e);
@@ -299,6 +286,12 @@ class _ReleasePageState extends State<ReleasePage> {
                     : Icons.add_circle_outline_outlined,
               ),
             ),
+            IconButton(
+              onPressed: () {
+                userProfileService.setHighlightedRelease(release);
+              },
+              icon: const Icon(Icons.highlight),
+            ),
           ],
         ),
         body: Padding(
@@ -348,19 +341,7 @@ class _ReleasePageState extends State<ReleasePage> {
                       itemBuilder: (context, index) {
                         return InkWell(
                           onTap: () async {
-                            if (release
-                                .tracklist[index]
-                                .artistCredits
-                                .isEmpty) {
-                              await _fetchTrack(release.tracklist[index]);
-                            }
-                            showModalBottomSheet(
-                              context: context,
-                              builder:
-                                  (context) => buildModalTrackDetail(
-                                    release.tracklist[index],
-                                  ),
-                            );
+                            print("Display track detail");
                           },
                           child: ListTile(
                             leading: Text(

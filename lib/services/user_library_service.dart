@@ -25,7 +25,7 @@ class UserLibraryService {
     if (response.statusCode == 200) {
       final responseData = jsonDecode(response.body) as List;
 
-      final List<Release> likedReleases = responseData.map((json) => Release.fromJson(json)).toList();
+      final List<Release> likedReleases = responseData.map((json) => Release.fromJson(json['release'])).toList();
 
       return likedReleases;
     } else {
@@ -132,7 +132,7 @@ class UserLibraryService {
     if (response.statusCode == 200) {
       final responseData = jsonDecode(response.body) as List;
 
-      final List<Release> likedReleases = responseData.map((json) => Release.fromJson(json)).toList();
+      final List<Release> likedReleases = responseData.map((json) => Release.fromJson(json['release'])).toList();
 
       return likedReleases;
     } else {
@@ -202,13 +202,14 @@ class UserLibraryService {
   Future<void> createRelease(Release release) async {
     Map<String, String> header = await setRequestHeader();
 
+    await getOrCreateArtist(release.artist);
     final response = await http.post(
       Uri.parse("http://10.0.2.2:8000/release/"),
       headers: header,
       body: jsonEncode({
-        "release_id": release.id,
+        "id": release.id,
         "title": release.title,
-        "artist": release.artist.name,
+        "artist_id": release.artist.id,
         "release_date": release.date,
         "type": release.type,
         "image_url": release.imageUrl,

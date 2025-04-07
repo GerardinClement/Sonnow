@@ -42,7 +42,7 @@ class ReleaseListView extends StatelessWidget {
                   height: 50,
                   fit: BoxFit.cover,
                   errorBuilder: (context, error, stackTrace) {
-                    releases[index].getGoodImageUrl();
+                    releases[index].imageUrl;
                     return CachedNetworkImage(
                         imageUrl: releases[index].imageUrl,
                         width: 50,
