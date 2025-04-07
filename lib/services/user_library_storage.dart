@@ -1,6 +1,8 @@
 import 'package:hive/hive.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:sonnow/models/release.dart';
+import 'package:sonnow/models/artist.dart';
+import 'package:sonnow/models/user.dart';
 
 Future<void> addLikedReleasesInBox(List<Release> likedReleases) async {
   var box = await Hive.openBox("liked_releases");
@@ -30,12 +32,48 @@ Future<void> removeToListenReleasesFromBox(String releaseId) async {
   box.delete(releaseId);
 }
 
-Future<void> addLikedArtistsInBox(List<String> likedArtists) async {
+Future<void> addLikedArtistsInBox(List<Artist> likedArtists) async {
   var box = await Hive.openBox("liked_artists");
 
   for (var artist in likedArtists) {
-    box.put(artist, true);
+    box.put(artist.id, true);
   }
+}
+
+Future<bool> getIfArtistIsHighlighted(String artistId) async {
+  var box = await Hive.openBox("user_profile");
+
+  return box.get("user_highlight_artist") == artistId;
+}
+
+Future<bool> getIfReleaseIsHighlighted(String releaseId) async {
+  var box = await Hive.openBox("user_profile");
+
+  return box.get("user_highlight_release") == releaseId;
+}
+
+Future<void> addHighlightReleaseInBox(Release release) async {
+  var box = await Hive.openBox("user_profile");
+
+  box.put("user_highlight_release", release.id);
+}
+
+Future<void> addHighlightArtistInBox(Artist artist) async {
+  var box = await Hive.openBox("user_profile");
+
+  box.put("user_highlight_artist", artist.id);
+}
+
+Future<void> removeHighlightReleaseFromBox() async {
+  var box = await Hive.openBox("user_profile");
+
+  box.delete("user_highlight_release");
+}
+
+Future<void> removeHighlightArtistFromBox() async {
+  var box = await Hive.openBox("user_profile");
+
+  box.delete("user_highlight_artist");
 }
 
 Future<void> removeLikedArtistsFromBox(String artistId) async {

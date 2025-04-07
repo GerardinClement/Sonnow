@@ -24,6 +24,8 @@ class _ArtistPageState extends State<ArtistPage> {
 
   late Artist artist;
   late bool isLoading;
+  late bool isHighlighted = false;
+  late String _errorMessage = "";
 
   @override
   void initState() {
@@ -38,16 +40,18 @@ class _ArtistPageState extends State<ArtistPage> {
       if (artist.releases.isEmpty) {
         artist.releases = await DeezerApi.getArtistAlbums(artist);
         artist.setReleasesByType(artist.releases);
+        isHighlighted = await getIfArtistIsHighlighted(artist.id);
         print("Artist releases: ${artist.releases}");
       }
       if (mounted) {
         setState(() {
+          isHighlighted = isHighlighted;
           artist = artist;
           isLoading = false;
         });
       }
     } catch (e) {
-      print(e);
+      _errorMessage = "Error fetching artist data";
     }
   }
 
@@ -58,14 +62,14 @@ class _ArtistPageState extends State<ArtistPage> {
         removeLikedArtistsFromBox(artist.id);
       } else {
         await userLibraryService.likeArtist(artist);
-        addLikedArtistsInBox([artist.id]);
+        addLikedArtistsInBox([artist]);
       }
 
       setState(() {
         artist.isLiked = !artist.isLiked;
       });
     } catch (e) {
-      print(e);
+      _errorMessage = "Error toggling like status";
     }
   }
 
@@ -73,7 +77,7 @@ class _ArtistPageState extends State<ArtistPage> {
     try {
       await userProfileService.setHighlightedArtist(artist);
     } catch (e) {
-      print(e);
+      _errorMessage = "Error adding highlighted artist";
     }
   }
 
@@ -93,7 +97,7 @@ class _ArtistPageState extends State<ArtistPage> {
             onPressed: () {
               addHighlightedArtists();
             },
-            icon: Icon(Icons.highlight),
+            icon: Icon(isHighlighted? Icons.star : Icons.star_border),
           ),
         ],
       ),

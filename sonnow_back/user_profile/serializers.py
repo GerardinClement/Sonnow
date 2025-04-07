@@ -1,4 +1,5 @@
-from rest_framework import serializers
+from rest_framework import serializers, status
+from rest_framework.response import Response
 from .models import Profile
 from artists.serializers import ArtistSerializer
 from releases.serializers import ReleaseSerializer
@@ -33,13 +34,13 @@ class ProfileSerializer(serializers.ModelSerializer):
             try:
                 instance.highlighted_artist = Artist.objects.get(id=highlighted_artist_id)
             except Artist.DoesNotExist:
-                pass
+                return Response({'error': 'Artist not found'}, status=status.HTTP_404_NOT_FOUND)
 
         if highlighted_release_id is not None:
             from releases.models import Release
             try:
                 instance.highlighted_release = Release.objects.get(id=highlighted_release_id)
             except Release.DoesNotExist:
-                pass
+                return Response({'error': 'Release not found'}, status=status.HTTP_404_NOT_FOUND)
 
         return super().update(instance, validated_data)

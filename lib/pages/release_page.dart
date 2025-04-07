@@ -26,6 +26,7 @@ class _ReleasePageState extends State<ReleasePage> {
 
   List<Review> reviews = [];
   late Release release;
+  late bool isHighlighted = false;
 
   @override
   void initState() {
@@ -67,7 +68,9 @@ class _ReleasePageState extends State<ReleasePage> {
     try {
       final List<Track> tracklist = await DeezerApi.getAlbumTracks(release.id);
       release.setTracklist(tracklist);
+      isHighlighted = await getIfReleaseIsHighlighted(release.id);
       setState(() {
+        isHighlighted = isHighlighted;
         release = release;
       });
     } catch (e) {
@@ -266,7 +269,7 @@ class _ReleasePageState extends State<ReleasePage> {
       length: 2,
       child: Scaffold(
         appBar: AppBar(
-          title: Text("Release Page"),
+          title: Text(release.title),
           actions: [
             IconButton(
               onPressed: () {
@@ -290,7 +293,7 @@ class _ReleasePageState extends State<ReleasePage> {
               onPressed: () {
                 userProfileService.setHighlightedRelease(release);
               },
-              icon: const Icon(Icons.highlight),
+              icon: Icon(isHighlighted ? Icons.star : Icons.star_border),
             ),
           ],
         ),

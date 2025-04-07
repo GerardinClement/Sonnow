@@ -3,11 +3,9 @@ import 'package:sonnow/services/user_profile_service.dart';
 import 'package:sonnow/models/user.dart';
 import 'package:sonnow/pages/edit_profile_page.dart';
 import 'package:sonnow/pages/settings_page.dart';
-import 'package:sonnow/pages/artist_page.dart';
 import 'package:sonnow/views/artist_card_view.dart';
 import 'package:sonnow/views/release_card_view.dart';
 import 'package:sonnow/globals.dart';
-import 'package:cached_network_image/cached_network_image.dart';
 
 class ProfilePage extends StatefulWidget {
   const ProfilePage({super.key});
@@ -24,6 +22,7 @@ class _ProfilePageState extends State<ProfilePage> with RouteAware {
   @override
   initState() {
     super.initState();
+    userProfileRefreshNotifier.addListener(_handleTabChange);
     _fetchUserInfo();
   }
 
@@ -37,7 +36,12 @@ class _ProfilePageState extends State<ProfilePage> with RouteAware {
   @override
   void dispose() {
     routeObserver.unsubscribe(this);
+    userProfileRefreshNotifier.removeListener(_handleTabChange);
     super.dispose();
+  }
+
+  void _handleTabChange() {
+    _fetchUserInfo();
   }
 
   Future<void> _fetchUserInfo() async {

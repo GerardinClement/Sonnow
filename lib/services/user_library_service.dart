@@ -24,6 +24,7 @@ class UserLibraryService {
 
     if (response.statusCode == 200) {
       final responseData = jsonDecode(response.body) as List;
+      if (responseData.isEmpty) return [];
 
       final List<Release> likedReleases = responseData.map((json) => Release.fromJson(json['release'])).toList();
 
@@ -78,6 +79,7 @@ class UserLibraryService {
 
     if (response.statusCode == 200) {
       final responseData = jsonDecode(response.body) as List;
+      if (responseData.isEmpty) return [];
 
       final List<Artist> likedArtists = responseData.map((json) => Artist.fromJson(json['artist'])).toList();
 
@@ -131,6 +133,7 @@ class UserLibraryService {
 
     if (response.statusCode == 200) {
       final responseData = jsonDecode(response.body) as List;
+      if (responseData.isEmpty) return [];
 
       final List<Release> likedReleases = responseData.map((json) => Release.fromJson(json['release'])).toList();
 

@@ -29,7 +29,7 @@ class Release {
 
   factory Release.fromJson(Map<String, dynamic> json) {
     return Release(
-        id: json['release_id']?.toString() ?? "Unknown",
+        id: json['id']?.toString() ?? "Unknown",
         title: json['title']?.toString() ?? "Unknown",
         artist: Artist.fromJson(json['artist']),
         date: json['release_date']?.toString() ?? "Unknown",

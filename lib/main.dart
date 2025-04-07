@@ -9,6 +9,7 @@ void main() async {
   await Hive.openBox('liked_releases');
   await Hive.openBox('liked_artists');
   await Hive.openBox('to_listen_releases');
+  await Hive.openBox('user_profile');
   runApp(MyApp());
 }
 

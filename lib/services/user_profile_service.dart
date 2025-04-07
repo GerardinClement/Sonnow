@@ -1,5 +1,6 @@
 import 'package:sonnow/models/user.dart';
 import 'package:sonnow/services/user_library_service.dart';
+import 'package:sonnow/services/user_library_storage.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:sonnow/utils.dart';
@@ -64,8 +65,7 @@ class UserProfileService {
     final response = await request.send();
 
     if (response.statusCode == 200) {
-      final responseData = await response.stream.bytesToString();
-      print("Highlighted artist set successfully: $responseData");
+      await addHighlightArtistInBox(artist);
     } else {
       throw Exception("Error setting highlighted artist");
     }
@@ -85,8 +85,7 @@ class UserProfileService {
     final response = await request.send();
 
     if (response.statusCode == 200) {
-      final responseData = await response.stream.bytesToString();
-      print("Highlighted release set successfully: $responseData");
+      await addHighlightReleaseInBox(release);
     } else {
       throw Exception("Error setting highlighted release");
     }
