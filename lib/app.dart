@@ -7,7 +7,10 @@ import 'package:sonnow/pages/home_page.dart';
 import 'package:sonnow/services/auth_service.dart';
 import 'package:sonnow/services/user_library_service.dart';
 import 'package:sonnow/services/user_library_storage.dart';
+import 'package:sonnow/services/user_profile_service.dart';
 import 'package:sonnow/models/release.dart';
+import 'package:sonnow/models/artist.dart';
+import 'package:sonnow/models/user.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:sonnow/models/tab_item.dart';
 import 'package:sonnow/layouts/bottom_navigation.dart';
@@ -22,6 +25,7 @@ class App extends StatefulWidget {
 
 class AppState extends State<App> {
   final UserLibraryService userLibraryService = UserLibraryService();
+  final UserProfileService userProfileService = UserProfileService();
   late bool isLogin = false;
   static int currentTab = 0;
 
@@ -64,11 +68,18 @@ class AppState extends State<App> {
     } else {
       libraryRefreshNotifier.value = false;
     }
+    if (tabs[index].tabName == 'Profile') {
+      userProfileRefreshNotifier.value = true;
+    } else {
+      userProfileRefreshNotifier.value = false;
+    }
   }
 
   void onLoginSuccess() async {
     await _getLikedReleases();
     await _getToListenReleases();
+    await _getLikedArtists();
+    await _getUserProfile();
     setState(() {
       isLogin = true;
     });
@@ -78,6 +89,23 @@ class AppState extends State<App> {
   void initState() {
     super.initState();
     _checkLoginStatus();
+  }
+
+  Future<void> _getUserProfile() async {
+    final User user = await userProfileService.fetchUserProfile();
+    if (user.highlightRelease != null) {
+      await addHighlightReleaseInBox(user.highlightRelease!);
+    }
+    if (user.highlightArtist != null) {
+      await addHighlightArtistInBox(user.highlightArtist!);
+    }
+  }
+
+  Future<void> _getLikedArtists() async {
+    clearLikedArtistsBox();
+    final List<Artist> likedArtists =
+        await userLibraryService.fetchUserLikedArtists();
+    await addLikedArtistsInBox(likedArtists);
   }
 
   Future<void> _getLikedReleases() async {

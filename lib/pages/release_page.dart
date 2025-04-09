@@ -5,10 +5,10 @@ import 'package:sonnow/models/review.dart';
 import 'package:sonnow/models/track.dart';
 import 'package:sonnow/services/deezer_api.dart';
 import 'package:sonnow/services/review_service.dart';
-import 'package:flutter_rating_stars/flutter_rating_stars.dart';
 import 'package:sonnow/services/user_library_service.dart';
 import 'package:sonnow/services/user_library_storage.dart';
 import 'package:sonnow/services/user_profile_service.dart';
+import 'package:sonnow/views/review_list_view.dart';
 
 class ReleasePage extends StatefulWidget {
   final Release release;
@@ -25,17 +25,32 @@ class _ReleasePageState extends State<ReleasePage> {
   final UserProfileService userProfileService = UserProfileService();
 
   List<Review> reviews = [];
+  Map<int, String> tags = {};
+  Map<int, String> selectedTags = {};
   late Release release;
   late bool isHighlighted = false;
+  late String _errorMessage = "";
 
   @override
   void initState() {
     super.initState();
     release = widget.release;
     _fetchRelease(release);
+    _fetchTags();
     _fetchReviews(release.id);
     _fetchLikedReleases();
     _fetchToListenReleases();
+  }
+
+  Future<void> _fetchTags() async {
+    try {
+      Map<int, String> result = await reviewService.getAllTags();
+      setState(() {
+        tags = result;
+      });
+    } catch (e) {
+      _errorMessage = "Error fetching tags";
+    }
   }
 
   Future<void> _fetchLikedReleases() async {
@@ -125,13 +140,86 @@ class _ReleasePageState extends State<ReleasePage> {
     }
   }
 
+  Future<void> _showTagsSelectionModal(
+      BuildContext context,
+      Map<int, String> tags,
+      Function(Map<int, String>) onTagsUpdated
+      ) async {
+    Map<int, String> tempSelectedTags = Map.from(selectedTags);
+
+    await showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      builder: (BuildContext context) {
+        return StatefulBuilder(
+          builder: (BuildContext context, StateSetter setModalState) {
+            return Padding(
+              padding: EdgeInsets.only(
+                bottom: MediaQuery.of(context).viewInsets.bottom,
+                left: 16,
+                right: 16,
+                top: 16,
+              ),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text(
+                    "Select Tags",
+                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                  ),
+                  const SizedBox(height: 10),
+                  Expanded(
+                    child: ListView.builder(
+                      itemCount: tags.length,
+                      itemBuilder: (context, index) {
+                        final tagId = tags.keys.elementAt(index);
+                        final tagName = tags[tagId]!;
+                        final isSelected = tempSelectedTags.containsKey(tagId);
+
+                        return CheckboxListTile(
+                          title: Text(tagName),
+                          value: isSelected,
+                          onChanged: (bool? value) {
+                            setModalState(() {
+                              if (value == true) {
+                                tempSelectedTags[tagId] = tagName;
+                              } else {
+                                tempSelectedTags.remove(tagId);
+                              }
+                            });
+                          },
+                        );
+                      },
+                    ),
+                  ),
+                  ElevatedButton(
+                    onPressed: () {
+                      setState(() {
+                        selectedTags = Map.from(tempSelectedTags);
+                      });
+                      onTagsUpdated(tempSelectedTags);
+                      Navigator.pop(context);
+                    },
+                    child: const Text("Valider"),
+                  ),
+                ],
+              ),
+            );
+          },
+        );
+      },
+    );
+  }
+
   void _showReviewForm() {
+    Map<int, String> reviewTags = Map.from(selectedTags);
+
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
       builder: (BuildContext context) {
         String content = "";
-        double rating = 3.0;
 
         return StatefulBuilder(
           builder: (BuildContext context, StateSetter setModalState) {
@@ -156,26 +244,51 @@ class _ReleasePageState extends State<ReleasePage> {
                     onChanged: (value) => content = value,
                   ),
                   SizedBox(height: 10),
-                  Text("Rate :"),
-                  RatingStars(
-                    value: rating,
-                    onValueChanged: (v) {
-                      setModalState(() {
-                        rating = v;
-                      });
+                  Text("Add Tags"),
+                  Wrap(
+                    spacing: 8.0,
+                    children: reviewTags.entries.map((entry) {
+                      return Chip(
+                        label: Text(entry.value),
+                        onDeleted: () {
+                          setModalState(() {
+                            reviewTags.remove(entry.key);
+                          });
+                        },
+                      );
+                    }).toList(),
+                  ),
+                  IconButton(
+                    onPressed: () async {
+                      await _showTagsSelectionModal(
+                          context,
+                          tags,
+                              (updatedTags) {
+                            setModalState(() {
+                              reviewTags = Map.from(updatedTags);
+                            });
+                          }
+                      );
                     },
-                    starSize: 30,
-                    starColor: Colors.amber,
-                    starCount: 5,
-                    valueLabelVisibility: false,
+                    icon: const Icon(Icons.add_circle_outline_outlined),
                   ),
                   SizedBox(height: 20),
                   ElevatedButton(
-                    onPressed: () {
-                      reviewService.postReview(release.id, content, rating);
-                      Navigator.pop(context);
-                    },
+                    onPressed: () async {
+                      try {
+                        await reviewService.postReview(release, content, reviewTags);
+                        Navigator.pop(context);
+                        _fetchReviews(release.id);
 
+                        setState(() {
+                          selectedTags = {};
+                        });
+                      } catch (e) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(content: Text("Erreur lors de l'envoi de l'avis")),
+                        );
+                      }
+                    },
                     child: Text("Save"),
                   ),
                 ],
@@ -184,7 +297,11 @@ class _ReleasePageState extends State<ReleasePage> {
           },
         );
       },
-    );
+    ).then((_) {
+      setState(() {
+        selectedTags = {};
+      });
+    });
   }
 
   Widget buildModalTrackDetail(Track track) {
@@ -365,27 +482,9 @@ class _ReleasePageState extends State<ReleasePage> {
                           child: Text("Ajouter un avis"),
                         ),
                         Expanded(
-                          child: ListView.builder(
-                            itemCount: reviews.length,
-                            itemBuilder: (context, index) {
-                              return ListTile(
-                                subtitle: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Text(reviews[index].content),
-                                    RatingStars(
-                                      value: reviews[index].rating,
-                                      onValueChanged: (v) {},
-                                      starSize: 20,
-                                      starColor: Colors.amber,
-                                      starCount: 5,
-                                      valueLabelVisibility: false,
-                                    ),
-                                  ],
-                                ),
-                              );
-                            },
-                          ),
+                          child: reviews.isEmpty
+                              ? const Center(child: Text("Aucun avis"))
+                              : ReviewListView(reviews: reviews),
                         ),
                       ],
                     ),

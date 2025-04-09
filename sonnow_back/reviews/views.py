@@ -1,43 +1,40 @@
-from django.db import IntegrityError
-from django.utils.decorators import method_decorator
-from django.views.decorators.csrf import csrf_protect
-from rest_framework import status
-from rest_framework.decorators import permission_classes
-from rest_framework.permissions import AllowAny
+from rest_framework.permissions import AllowAny, IsAuthenticated
+
+from releases.models import Release
+from .models import Review, Tag
+from rest_framework.generics import ListCreateAPIView, ListAPIView
+from .serializers import ReviewSerializer, TagSerializer
 from rest_framework.response import Response
-from rest_framework.views import APIView
-from .models import Review
+from rest_framework import status
 
-required_keys = ['rating']
+class ReviewListView(ListAPIView):
+    serializer_class = ReviewSerializer
+    permission_classes = [AllowAny]
 
-class ReviewView(APIView):
+    def get_queryset(self):
+        return Review.objects.filter(release_id=self.kwargs['release_id'])
 
-    @method_decorator(csrf_protect)
-    def post(self, request, id):
-        if not request.user.is_authenticated:
-            return Response(status=status.HTTP_401_UNAUTHORIZED)
-        data = request.data
-        if not all(key in data for key in required_keys):
-            return Response(status=status.HTTP_400_BAD_REQUEST)
-        try:
-            Review.objects.create(
-                user=request.user,
-                release_id=id,
-                content=data['content'] or "",
-                rating=data['rating'],
-            )
-            return Response(status=status.HTTP_201_CREATED)
-        except IntegrityError as e:
-            return Response(status=status.HTTP_400_BAD_REQUEST)
+class ReviewListCreateView(ListCreateAPIView):
+    serializer_class = ReviewSerializer
+    permission_classes = [IsAuthenticated]
 
-    def get(self, request, id):
-        reviews = Review.objects.filter(release_id=id)
-        return Response([{
-            'release_id': review.release_id,
-            'user': review.user.username,
-            'content': review.content,
-            'rating': review.rating,
-        } for review in reviews])
+    def get_queryset(self):
+        return Review.objects.filter(user=self.request.user)
+
+    def create(self, request, *args, **kwargs):
+        data = request.data.copy()
+        data['user'] = request.user.id
+        serializer = self.get_serializer(data=data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+class TagView(ListCreateAPIView):
+    permission_classes = [AllowAny]
+    serializer_class = TagSerializer
+    queryset = Tag.objects.all()
+
         
 
 

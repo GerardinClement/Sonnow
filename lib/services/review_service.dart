@@ -1,14 +1,18 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:sonnow/models/review.dart';
+import 'package:sonnow/models/release.dart';
 import 'package:sonnow/services/auth_service.dart';
+import 'package:sonnow/services/user_library_service.dart';
+import 'package:sonnow/utils.dart';
 
 class ReviewService {
   final AuthService authService = AuthService();
+  final UserLibraryService userLibraryService = UserLibraryService();
   final String baseUrl = "http://10.0.2.2:8000/review";
 
   Future<List<Review>> getReviews(String releaseId) async {
-    final response = await http.get(Uri.parse("$baseUrl/$releaseId"));
+    final response = await http.get(Uri.parse("$baseUrl/$releaseId/"));
 
     if (response.statusCode == 200) {
       List<Review> reviews = (json.decode(response.body) as List)
@@ -21,24 +25,17 @@ class ReviewService {
     }
   }
 
-  Future<Review> postReview(String releaseId, String content, double rating) async {
-    if (!await authService.checkIfLoggedIn()) throw Exception("User not logged in");
+  Future<Review> postReview(Release release, String content, Map<int, String> tags) async {
+    final header = await setRequestHeader();
 
-    final csrfToken = await authService.getCsrfToken();
-    final token = await authService.getToken("access_token");
-
-    if (token == null) return throw Exception("Error with access token"); // TODO: Handle this case
+    await userLibraryService.getOrCreateRelease(release);
     final response = await http.post(
-      Uri.parse("$baseUrl/$releaseId/create/"),
-      headers: {
-        "Content-Type": "application/json",
-        "X-CSRFToken": csrfToken,
-        "Authorization": "Bearer $token",
-        "Cookie": "csrftoken=$csrfToken",
-      },
+      Uri.parse("$baseUrl/"),
+      headers: header,
       body: jsonEncode({
         "content": content,
-        "rating": rating,
+        "tag_ids": tags.keys.toList(),
+        "release_id": release.id,
       }),
     );
 
@@ -46,6 +43,21 @@ class ReviewService {
       return Review.fromJson(json.decode(response.body));
     } else {
       throw Exception("Error posting review");
+    }
+  }
+
+  Future<Map<int, String>> getAllTags() async {
+    final response = await http.get(Uri.parse("$baseUrl/tags/"));
+
+    if (response.statusCode == 200) {
+      Map<int, String> tags = {};
+      List<dynamic> data = json.decode(response.body);
+      for (var item in data) {
+        tags[item['id']] = item['content'];
+      }
+      return tags;
+    } else {
+      throw Exception("Error getting tags");
     }
   }
 

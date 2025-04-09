@@ -1,24 +1,29 @@
+import 'package:sonnow/models/release.dart';
+import 'package:sonnow/models/user.dart';
+
 class Review {
-  final String releaseId;
+  final Release release;
   final String content;
-  final double rating;
-  final String user;
+  final List<String> tags;
+  final User user;
   final String date;
 
   Review({
-    required this.releaseId,
+    required this.release,
     required this.content,
-    required this.rating,
+    required this.tags,
     required this.user,
     required this.date,
   });
 
   factory Review.fromJson(Map<String, dynamic> json) {
     return Review(
-      releaseId: json['release_id']?.toString() ?? "Unknown",
+      release: Release.fromJson(json['release']),
       content: json['content']?.toString() ?? "Unknown",
-      rating: (json['rating'] is String) ? double.parse(json['rating']) : json['rating'].toDouble(),
-      user: json['user']?.toString() ?? "Unknown",
+      tags: json['tags'] != null
+          ? List<String>.from(json['tags'].map((tag) => tag["content"].toString()))
+          : [],
+      user: User.fromJson(json['user_profile']),
       date: json['date']?.toString() ?? "Unknown",
     );
   }
