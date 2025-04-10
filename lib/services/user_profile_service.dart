@@ -23,6 +23,48 @@ class UserProfileService {
     }
   }
 
+  Future<List<User>> searchUser(String query) async {
+    Map<String, String> header = await setRequestHeader();
+
+    final response = await http.get(
+      Uri.parse("$baseUrl/search/?q=$query"),
+      headers: header,
+    );
+
+    if (response.statusCode == 200) {
+      final responseData = json.decode(response.body) as List;
+      return responseData.map((json) => User.fromJson(json)).toList();
+    } else {
+      throw Exception("Error searching user");
+    }
+  }
+
+  Future<void> followUser(User user) async {
+    Map<String, String> header = await setRequestHeader();
+
+    final response = await http.post(
+      Uri.parse("$baseUrl/follow/${user.id}/"),
+      headers: header,
+    );
+
+    if (response.statusCode != 200) {
+      throw Exception("Error following user");
+    }
+  }
+
+  Future<void> unfollowUser(User user) async {
+    Map<String, String> header = await setRequestHeader();
+
+    final response = await http.delete(
+      Uri.parse("$baseUrl/unfollow/${user.id}/"),
+      headers: header,
+    );
+
+    if (response.statusCode != 200) {
+      throw Exception("Error unfollowing user");
+    }
+  }
+
   Future<User> updateUserProfile(Map<String, dynamic> fields) async {
     Map<String, String> header = await setRequestHeader();
 

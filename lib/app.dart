@@ -33,7 +33,7 @@ class AppState extends State<App> {
     TabItem(
       tabName: "Profile",
       icon: Icons.person,
-      page: ProfilePage(),
+      page: ProfilePage(user: null),
       index: 0,
     ),
     TabItem(
@@ -99,6 +99,20 @@ class AppState extends State<App> {
     if (user.highlightArtist != null) {
       await addHighlightArtistInBox(user.highlightArtist!);
     }
+    await _getFollowing(user);
+    await _getFollowers(user);
+  }
+
+  Future<void> _getFollowing(User user) async {
+    for (var follow in user.follows) {
+      await userFollowsStorage.addFollowing(follow);
+    }
+  }
+
+  Future<void> _getFollowers(User user) async {
+    for (var follower in user.followers) {
+      await userFollowsStorage.addFollower(follower);
+    }
   }
 
   Future<void> _getLikedArtists() async {
@@ -128,6 +142,9 @@ class AppState extends State<App> {
     if (isLogin) {
       _getLikedReleases();
       _getToListenReleases();
+      final user = await userProfileService.fetchUserProfile();
+      _getFollowers(user);
+      _getFollowing(user);
     }
     setState(() {
       isLogin = isLogin;

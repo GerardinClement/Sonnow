@@ -6,9 +6,12 @@ import 'package:sonnow/pages/settings_page.dart';
 import 'package:sonnow/views/artist_card_view.dart';
 import 'package:sonnow/views/release_card_view.dart';
 import 'package:sonnow/globals.dart';
+import 'package:sonnow/views/review_list_view.dart';
 
 class ProfilePage extends StatefulWidget {
-  const ProfilePage({super.key});
+  final User? user;
+
+  const ProfilePage({super.key, required this.user});
 
   @override
   _ProfilePageState createState() => _ProfilePageState();
@@ -17,19 +20,47 @@ class ProfilePage extends StatefulWidget {
 class _ProfilePageState extends State<ProfilePage> with RouteAware {
   final UserProfileService userProfileService = UserProfileService();
   late User user;
+  late bool editable = false;
   late bool isLoading = true;
+  late bool isFollowing = false;
 
   @override
   initState() {
     super.initState();
     userProfileRefreshNotifier.addListener(_handleTabChange);
-    _fetchUserInfo();
+    _initializeUser();
+  }
+
+  void _initializeUser() {
+    if (widget.user != null) {
+      setState(() {
+        user = widget.user!;
+        editable = false;
+        isLoading = false;
+        isFollowing = userFollowsStorage.isFollowing(user.id);
+      });
+    } else {
+      _fetchUserInfo();
+      editable = true;
+    }
+  }
+
+  void _toggleFollow() {
+    if (userFollowsStorage.isFollowing(user.id)) {
+      userProfileService.unfollowUser(user);
+      userFollowsStorage.removeFollowing(user.id);
+    } else {
+      userProfileService.followUser(user);
+      userFollowsStorage.addFollowing(user);
+    }
+    setState(() {
+      isFollowing = !isFollowing;
+    });
   }
 
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    _fetchUserInfo();
     routeObserver.subscribe(this, ModalRoute.of(context)!);
   }
 
@@ -41,14 +72,16 @@ class _ProfilePageState extends State<ProfilePage> with RouteAware {
   }
 
   void _handleTabChange() {
-    _fetchUserInfo();
+    if (userProfileRefreshNotifier.value && widget.user == null) {
+      _fetchUserInfo();
+    }
   }
 
   Future<void> _fetchUserInfo() async {
-    user = await userProfileService.fetchUserProfile();
+    final fetchedUser = await userProfileService.fetchUserProfile();
     if (mounted) {
       setState(() {
-        user = user;
+        user = fetchedUser;
         isLoading = false;
       });
     }
@@ -60,71 +93,87 @@ class _ProfilePageState extends State<ProfilePage> with RouteAware {
       appBar: AppBar(
         title: Text("Profile"),
         actions: [
-          IconButton(
-            icon: Icon(Icons.edit),
-            onPressed: () {
-              Navigator.of(context).push(
-                MaterialPageRoute(
-                  builder: (context) => EditProfilePage(user: user),
-                ),
-              );
-            },
-          ),
-          IconButton(
-            icon: Icon(Icons.settings),
-            onPressed: () {
-              Navigator.of(
-                context,
-              ).push(MaterialPageRoute(builder: (context) => SettingsPage()));
-            },
-          ),
+          if (editable)
+            IconButton(
+              icon: Icon(Icons.edit),
+              onPressed: () {
+                Navigator.of(context).push(
+                  MaterialPageRoute(
+                    builder: (context) => EditProfilePage(user: user),
+                  ),
+                );
+              },
+            ),
+          if (editable)
+            IconButton(
+              icon: Icon(Icons.settings),
+              onPressed: () {
+                Navigator.of(
+                  context,
+                ).push(MaterialPageRoute(builder: (context) => SettingsPage()));
+              },
+            ),
+          if (!editable)
+            IconButton(
+              icon: Icon(isFollowing ? Icons.add_circle_outlined :Icons.add_circle_outline_outlined),
+              onPressed: () {
+                _toggleFollow();
+              },
+            ),
         ],
       ),
       body:
           isLoading
               ? Center(child: CircularProgressIndicator())
-              : Column(
-                children: [
-                  SizedBox(height: 20),
-                  Center(
-                    child: CircleAvatar(
-                      radius: 100,
-                      backgroundImage: NetworkImage(user.profilePictureUrl),
-                    ),
-                  ),
-                  Padding(
-                    padding: const EdgeInsets.only(top: 16.0, bottom: 8.0),
-                    child: Text(
-                      user.displayName,
-                      style: TextStyle(
-                        fontSize: 35,
-                        fontWeight: FontWeight.bold,
+              : SingleChildScrollView(
+                child: Column(
+                  children: [
+                    SizedBox(height: 20),
+                    Center(
+                      child: CircleAvatar(
+                        radius: 100,
+                        backgroundImage: NetworkImage(user.profilePictureUrl),
                       ),
                     ),
-                  ),
-                  Padding(
-                    padding: const EdgeInsets.only(bottom: 8.0),
-                    child: Text(
-                      user.bio,
-                      style: TextStyle(fontSize: 20, color: Colors.grey),
+                    Padding(
+                      padding: const EdgeInsets.only(top: 16.0, bottom: 8.0),
+                      child: Text(
+                        user.displayName,
+                        style: TextStyle(
+                          fontSize: 35,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
                     ),
-                  ),
-                  Padding(
-                    padding: const EdgeInsets.only(top: 8.0),
-                    child: user.highlightArtist != null
-                        ? ArtistCard(artist: user.highlightArtist!)
-                        : SizedBox(height: 8),
-                  ),
-                  Padding(
-                    padding: const EdgeInsets.only(top: 8.0),
-                    child: user.highlightRelease != null
-                        ? ReleaseCard(release: user.highlightRelease!)
-                        : SizedBox(height: 8),
-                  ),
-
-
-
-                ],
+                    Padding(
+                      padding: const EdgeInsets.only(bottom: 8.0),
+                      child: Text(
+                        user.bio,
+                        style: TextStyle(fontSize: 20, color: Colors.grey),
+                      ),
+                    ),
+                    Padding(
+                      padding: const EdgeInsets.only(top: 8.0),
+                      child:
+                          user.highlightArtist != null
+                              ? ArtistCard(artist: user.highlightArtist!)
+                              : SizedBox(height: 8),
+                    ),
+                    Padding(
+                      padding: const EdgeInsets.only(top: 8.0),
+                      child:
+                          user.highlightRelease != null
+                              ? ReleaseCard(release: user.highlightRelease!)
+                              : SizedBox(height: 8),
+                    ),
+                    user.reviews.isNotEmpty
+                        ? ReviewListView(
+                          reviews: user.reviews,
+                          displayReleaseCover: true,
+                        )
+                        : Text("No reviews yet"),
+                  ],
+                ),
               ),
     );
   }

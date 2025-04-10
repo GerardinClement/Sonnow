@@ -3,8 +3,25 @@ from rest_framework import serializers
 
 from releases.models import Release
 from releases.serializers import ReleaseSerializer
-from user_profile.serializers import ProfileSerializer
 from .models import Review, Tag
+from user_profile.models import Profile
+
+
+class SimpleProfileSerializer(serializers.ModelSerializer):
+    username = serializers.CharField(source='user.username', read_only=True)
+    profile_picture = serializers.SerializerMethodField()
+
+    class Meta:
+        model = Profile
+        fields = ['id', 'username', 'display_name', 'profile_picture']
+
+    def get_profile_picture(self, obj):
+        if obj.profile_picture:
+            request = self.context.get('request')
+            if request:
+                return request.build_absolute_uri(obj.profile_picture.url)
+            return obj.profile_picture.url
+        return None
 
 class TagSerializer(ModelSerializer):
     class Meta:
@@ -24,7 +41,7 @@ class ReviewSerializer(ModelSerializer):
         required=True,
         write_only=True
     )
-    user_profile = ProfileSerializer(source='user.profile', read_only=True)
+    user_profile = SimpleProfileSerializer(source='user.profile', read_only=True)
 
     class Meta:
         model = Review

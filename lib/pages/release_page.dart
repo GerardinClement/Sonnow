@@ -484,7 +484,7 @@ class _ReleasePageState extends State<ReleasePage> {
                         Expanded(
                           child: reviews.isEmpty
                               ? const Center(child: Text("Aucun avis"))
-                              : ReviewListView(reviews: reviews),
+                              : ReviewListView(reviews: reviews, displayReleaseCover: false,),
                         ),
                       ],
                     ),

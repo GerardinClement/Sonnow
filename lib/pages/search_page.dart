@@ -3,10 +3,13 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:sonnow/models/artist.dart';
 import 'package:sonnow/models/release.dart';
+import 'package:sonnow/models/user.dart';
 import 'package:sonnow/utils.dart';
 import 'package:sonnow/views/release_list_view.dart';
 import 'package:sonnow/views/artist_list_view.dart';
+import 'package:sonnow/views/user_profile_list_view.dart';
 import 'package:sonnow/services/deezer_api.dart';
+import 'package:sonnow/services/user_profile_service.dart';
 
 class SearchPage extends StatefulWidget {
   const SearchPage({super.key});
@@ -16,12 +19,14 @@ class SearchPage extends StatefulWidget {
 }
 
 class _SearchPageState extends State<SearchPage> {
+  final UserProfileService userProfileService = UserProfileService();
   final DeezerApi deezerApi = DeezerApi();
   List<Release> releases = [];
   List<Artist> artists = [];
   List<Release> albums = [];
+  List<User> users = [];
   Timer? _debounce;
-  final List<String> _tags = ['Artist', 'Album', 'Track'];
+  final List<String> _tags = ['Artist', 'Album', 'Track', 'User'];
   String _selectedTag = "";
   String _searchQuery = "";
   int _searchId = 0;
@@ -104,34 +109,51 @@ class _SearchPageState extends State<SearchPage> {
     }
   }
 
-void onSearchChanged(String query) {
-  if (query.length < 2) {
-    clearSearch();
-    return;
-  }
+  Future<void> _fetchUserProfile(String query, bool limited) async {
+    try {
+      int searchId = _searchId;
+      List<User> result = await userProfileService.searchUser(query);
 
-  if (_debounce?.isActive ?? false) _debounce!.cancel();
-
-  _debounce = Timer(const Duration(milliseconds: 300), () async {
-    print("Searching for: $query");
-    _searchId += 1;
-    if (_selectedTag == "Artist") await _fetchArtist(query, false);
-    if (_selectedTag == "Album") await _fetchAlbum(query, false);
-    if (_selectedTag.isEmpty) {
-      Future.wait([
-        // _fetchArtist(query, true),
-        _fetchGlobal(query, true)
-      ]).then((_) {
-        if (mounted) {
-          setState(() {
-            preloadArtistImages(artists);
-            preloadReleaseImages(releases);
-          });
-        }
+      if (mounted && searchId == _searchId) {
+        setState(() {
+          users = result;
+        });
+      }
+    } catch (e) {
+      setState(() {
+        users = [];
       });
     }
-  });
-}
+  }
+
+  void onSearchChanged(String query) {
+    if (query.length < 2) {
+      clearSearch();
+      return;
+    }
+
+    if (_debounce?.isActive ?? false) _debounce!.cancel();
+
+    _debounce = Timer(const Duration(milliseconds: 300), () async {
+      print("Searching for: $query");
+      _searchId += 1;
+      if (_selectedTag == "Artist") await _fetchArtist(query, false);
+      if (_selectedTag == "Album") await _fetchAlbum(query, false);
+      if (_selectedTag.isEmpty) {
+        Future.wait([
+          _fetchGlobal(query, true),
+          _fetchUserProfile(query, true),
+        ]).then((_) {
+          if (mounted) {
+            setState(() {
+              preloadArtistImages(artists);
+              preloadReleaseImages(releases);
+            });
+          }
+        });
+      }
+    });
+  }
 
   Future<void> preloadArtistImages(List<Artist> artists) async {
     for (var artist in artists) {
@@ -174,18 +196,19 @@ void onSearchChanged(String query) {
               padding: const EdgeInsets.fromLTRB(8.0, 0, 8.0, 8.0),
               child: Wrap(
                 spacing: 8.0,
-                children: _tags.map((tag) {
-                  return ChoiceChip(
-                    label: Text(tag),
-                    selected: _selectedTag == tag,
-                    onSelected: (selected) {
-                      setState(() {
-                        _selectedTag = selected ? tag : "";
-                      });
-                      onSearchChanged(_searchQuery);
-                    },
-                  );
-                }).toList(),
+                children:
+                    _tags.map((tag) {
+                      return ChoiceChip(
+                        label: Text(tag),
+                        selected: _selectedTag == tag,
+                        onSelected: (selected) {
+                          setState(() {
+                            _selectedTag = selected ? tag : "";
+                          });
+                          onSearchChanged(_searchQuery);
+                        },
+                      );
+                    }).toList(),
               ),
             ),
             if (_selectedTag == "Artist" || _selectedTag.isEmpty) ...[
@@ -225,6 +248,19 @@ void onSearchChanged(String query) {
               ReleaseListView(
                 releases: releases,
                 shrinkWrap: _selectedTag != "Track",
+              ),
+            ],
+            if (_selectedTag == "User" || _selectedTag.isEmpty) ...[
+              Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: Text(
+                  "Users",
+                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                ),
+              ),
+              UserProfileListView(
+                users: users,
+                shrinkWrap: _selectedTag != "User",
               ),
             ],
           ],
