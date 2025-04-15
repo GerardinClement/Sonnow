@@ -7,6 +7,7 @@ import 'package:sonnow/views/artist_card_view.dart';
 import 'package:sonnow/views/release_card_view.dart';
 import 'package:sonnow/globals.dart';
 import 'package:sonnow/views/review_list_view.dart';
+import 'package:sonnow/views/user_profile_list_view.dart';
 
 class ProfilePage extends StatefulWidget {
   final User? user;
@@ -115,7 +116,11 @@ class _ProfilePageState extends State<ProfilePage> with RouteAware {
             ),
           if (!editable)
             IconButton(
-              icon: Icon(isFollowing ? Icons.add_circle_outlined :Icons.add_circle_outline_outlined),
+              icon: Icon(
+                isFollowing
+                    ? Icons.add_circle_outlined
+                    : Icons.add_circle_outline_outlined,
+              ),
               onPressed: () {
                 _toggleFollow();
               },
@@ -144,6 +149,46 @@ class _ProfilePageState extends State<ProfilePage> with RouteAware {
                           fontWeight: FontWeight.bold,
                         ),
                       ),
+                    ),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        InkWell(
+                          onTap: () {
+                            Navigator.of(context).push(
+                              MaterialPageRoute(
+                                builder:
+                                    (context) => UserProfileListView(
+                                      users: user.follows,
+                                      shrinkWrap: false,
+                                    ),
+                              ),
+                            );
+                          },
+                          child: Text(
+                            "${user.follows.length} Following",
+                            style: TextStyle(fontSize: 20, color: Colors.blue),
+                          ),
+                        ),
+                        Text("  |  ", style: TextStyle(fontSize: 20)),
+                        InkWell(
+                          onTap: () {
+                            Navigator.of(context).push(
+                              MaterialPageRoute(
+                                builder:
+                                    (context) => UserProfileListView(
+                                      users: user.followers,
+                                      shrinkWrap: false,
+                                    ),
+                              ),
+                            );
+                          },
+                          child: Text(
+                            "${user.followers.length} Followers",
+                            style: TextStyle(fontSize: 20, color: Colors.blue),
+                          ),
+                        ),
+                      ],
                     ),
                     Padding(
                       padding: const EdgeInsets.only(bottom: 8.0),

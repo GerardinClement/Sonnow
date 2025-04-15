@@ -55,6 +55,16 @@ class DeezerApi {
     }
   }
 
+  static Future<Release> getAlbum(String id) async {
+    final response = await http.get(
+        Uri.parse("$baseUrl$albumEndpoint/$id"));
+    if (response.statusCode == 200) {
+      return Release.fromJsonAlbumDetail(json.decode(response.body));
+    } else {
+      throw Exception("Failed to load album");
+    }
+  }
+
   static Future<List<Track>> getAlbumTracks(String id) async {
     final response = await http.get(
         Uri.parse("$baseUrl/album/$id/tracks"));

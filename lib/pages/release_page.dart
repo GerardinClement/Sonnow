@@ -9,6 +9,8 @@ import 'package:sonnow/services/user_library_service.dart';
 import 'package:sonnow/services/user_library_storage.dart';
 import 'package:sonnow/services/user_profile_service.dart';
 import 'package:sonnow/views/review_list_view.dart';
+import 'package:sonnow/views/contributors_list_view.dart';
+import 'package:sonnow/pages/artist_page.dart';
 
 class ReleasePage extends StatefulWidget {
   final Release release;
@@ -30,12 +32,13 @@ class _ReleasePageState extends State<ReleasePage> {
   late Release release;
   late bool isHighlighted = false;
   late String _errorMessage = "";
+  late bool isLoading = true;
 
   @override
   void initState() {
     super.initState();
     release = widget.release;
-    _fetchRelease(release);
+    _fetchRelease(release.id);
     _fetchTags();
     _fetchReviews(release.id);
     _fetchLikedReleases();
@@ -79,14 +82,22 @@ class _ReleasePageState extends State<ReleasePage> {
     }
   }
 
-  Future<void> _fetchRelease(Release release) async {
+  Future<void> _fetchRelease(String releaseId) async {
     try {
-      final List<Track> tracklist = await DeezerApi.getAlbumTracks(release.id);
-      release.setTracklist(tracklist);
-      isHighlighted = await getIfReleaseIsHighlighted(release.id);
-      setState(() {
-        isHighlighted = isHighlighted;
-        release = release;
+      Future.wait([
+        DeezerApi.getAlbum(releaseId),
+        DeezerApi.getAlbumTracks(releaseId),
+        getIfReleaseIsHighlighted(releaseId),
+      ]).then((List<dynamic> results) async {
+        Release res = results[0];
+        res.setTracklist(results[1]);
+        bool isHighlighted = results[2];
+
+        setState(() {
+          isHighlighted = isHighlighted;
+          release = res;
+          isLoading = false;
+        });
       });
     } catch (e) {
       print(e);
@@ -141,10 +152,10 @@ class _ReleasePageState extends State<ReleasePage> {
   }
 
   Future<void> _showTagsSelectionModal(
-      BuildContext context,
-      Map<int, String> tags,
-      Function(Map<int, String>) onTagsUpdated
-      ) async {
+    BuildContext context,
+    Map<int, String> tags,
+    Function(Map<int, String>) onTagsUpdated,
+  ) async {
     Map<int, String> tempSelectedTags = Map.from(selectedTags);
 
     await showModalBottomSheet(
@@ -247,28 +258,27 @@ class _ReleasePageState extends State<ReleasePage> {
                   Text("Add Tags"),
                   Wrap(
                     spacing: 8.0,
-                    children: reviewTags.entries.map((entry) {
-                      return Chip(
-                        label: Text(entry.value),
-                        onDeleted: () {
-                          setModalState(() {
-                            reviewTags.remove(entry.key);
-                          });
-                        },
-                      );
-                    }).toList(),
+                    children:
+                        reviewTags.entries.map((entry) {
+                          return Chip(
+                            label: Text(entry.value),
+                            onDeleted: () {
+                              setModalState(() {
+                                reviewTags.remove(entry.key);
+                              });
+                            },
+                          );
+                        }).toList(),
                   ),
                   IconButton(
                     onPressed: () async {
-                      await _showTagsSelectionModal(
-                          context,
-                          tags,
-                              (updatedTags) {
-                            setModalState(() {
-                              reviewTags = Map.from(updatedTags);
-                            });
-                          }
-                      );
+                      await _showTagsSelectionModal(context, tags, (
+                        updatedTags,
+                      ) {
+                        setModalState(() {
+                          reviewTags = Map.from(updatedTags);
+                        });
+                      });
                     },
                     icon: const Icon(Icons.add_circle_outline_outlined),
                   ),
@@ -276,7 +286,11 @@ class _ReleasePageState extends State<ReleasePage> {
                   ElevatedButton(
                     onPressed: () async {
                       try {
-                        await reviewService.postReview(release, content, reviewTags);
+                        await reviewService.postReview(
+                          release,
+                          content,
+                          reviewTags,
+                        );
                         Navigator.pop(context);
                         _fetchReviews(release.id);
 
@@ -285,7 +299,9 @@ class _ReleasePageState extends State<ReleasePage> {
                         });
                       } catch (e) {
                         ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(content: Text("Erreur lors de l'envoi de l'avis")),
+                          SnackBar(
+                            content: Text("Erreur lors de l'envoi de l'avis"),
+                          ),
                         );
                       }
                     },
@@ -382,119 +398,130 @@ class _ReleasePageState extends State<ReleasePage> {
 
   @override
   Widget build(BuildContext context) {
-    return DefaultTabController(
-      length: 2,
-      child: Scaffold(
-        appBar: AppBar(
-          title: Text(release.title),
-          actions: [
-            IconButton(
-              onPressed: () {
-                toggleLike();
-              },
-              icon: Icon(
-                release.isLiked ? Icons.favorite : Icons.favorite_border,
-              ),
+    return isLoading
+        ? const Center(child: CircularProgressIndicator())
+        : DefaultTabController(
+          length: 2,
+          child: Scaffold(
+            appBar: AppBar(
+              title: Text(release.title),
+              actions: [
+                IconButton(
+                  onPressed: () {
+                    toggleLike();
+                  },
+                  icon: Icon(
+                    release.isLiked ? Icons.favorite : Icons.favorite_border,
+                  ),
+                ),
+                IconButton(
+                  onPressed: () {
+                    toggleToListen();
+                  },
+                  icon: Icon(
+                    release.toListen
+                        ? Icons.add_circle
+                        : Icons.add_circle_outline_outlined,
+                  ),
+                ),
+                IconButton(
+                  onPressed: () {
+                    userProfileService.setHighlightedRelease(release);
+                  },
+                  icon: Icon(isHighlighted ? Icons.star : Icons.star_border),
+                ),
+              ],
             ),
-            IconButton(
-              onPressed: () {
-                toggleToListen();
-              },
-              icon: Icon(
-                release.toListen
-                    ? Icons.add_circle
-                    : Icons.add_circle_outline_outlined,
-              ),
-            ),
-            IconButton(
-              onPressed: () {
-                userProfileService.setHighlightedRelease(release);
-              },
-              icon: Icon(isHighlighted ? Icons.star : Icons.star_border),
-            ),
-          ],
-        ),
-        body: Padding(
-          padding: const EdgeInsets.all(16.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
+            body: Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  ClipRRect(
-                    borderRadius: BorderRadius.circular(8),
-                    child: Image.network(
-                      release.imageUrl,
-                      width: 200,
-                      height: 200,
-                      fit: BoxFit.cover,
-                      errorBuilder: (context, error, stackTrace) {
-                        return SizedBox(width: 200, height: 200);
-                      },
-                    ),
-                  ),
-                  SizedBox(width: 20),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(release.title, style: TextStyle(fontSize: 18)),
-                        Text(
-                          release.artist.name,
-                          style: TextStyle(fontSize: 18),
+                  Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      ClipRRect(
+                        borderRadius: BorderRadius.circular(8),
+                        child: Image.network(
+                          release.imageUrl,
+                          width: 200,
+                          height: 200,
+                          fit: BoxFit.cover,
+                          errorBuilder: (context, error, stackTrace) {
+                            return SizedBox(width: 200, height: 200);
+                          },
                         ),
-                        Text(release.type, style: TextStyle(fontSize: 18)),
-                        Text(release.date, style: TextStyle(fontSize: 18)),
+                      ),
+                      SizedBox(width: 20),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(release.title, style: TextStyle(fontSize: 18)),
+                            release.contributors.isNotEmpty
+                                ? ContributorsList(
+                                  contributors: release.contributors,
+                                )
+                                : ContributorsList(
+                                  contributors: [release.artist],
+                                ),
+                            Text(release.type, style: TextStyle(fontSize: 18)),
+                            Text(release.date, style: TextStyle(fontSize: 18)),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                  SizedBox(height: 20),
+                  TabBar(tabs: [Tab(text: "Tracklist"), Tab(text: "Avis")]),
+                  Expanded(
+                    child: TabBarView(
+                      children: [
+                        ListView.builder(
+                          itemCount: release.tracklist.length,
+                          itemBuilder: (context, index) {
+                            return InkWell(
+                              onTap: () async {
+                                print("Display track detail");
+                              },
+                              child: ListTile(
+                                leading: Text(
+                                  "${release.tracklist[index].position}",
+                                ),
+                                title: Text(release.tracklist[index].title),
+                                subtitle: Text(
+                                  getArtistNames(
+                                    release.tracklist[index].artist,
+                                  ),
+                                ),
+                              ),
+                            );
+                          },
+                        ),
+                        Column(
+                          children: [
+                            ElevatedButton(
+                              onPressed: _showReviewForm,
+                              child: Text("Ajouter un avis"),
+                            ),
+                            Expanded(
+                              child:
+                                  reviews.isEmpty
+                                      ? const Center(child: Text("Aucun avis"))
+                                      : ReviewListView(
+                                        reviews: reviews,
+                                        displayReleaseCover: false,
+                                      ),
+                            ),
+                          ],
+                        ),
                       ],
                     ),
                   ),
                 ],
               ),
-              SizedBox(height: 20),
-              TabBar(tabs: [Tab(text: "Tracklist"), Tab(text: "Avis")]),
-              Expanded(
-                child: TabBarView(
-                  children: [
-                    ListView.builder(
-                      itemCount: release.tracklist.length,
-                      itemBuilder: (context, index) {
-                        return InkWell(
-                          onTap: () async {
-                            print("Display track detail");
-                          },
-                          child: ListTile(
-                            leading: Text(
-                              "${release.tracklist[index].position}",
-                            ),
-                            title: Text(release.tracklist[index].title),
-                            subtitle: Text(
-                              getArtistNames(release.tracklist[index].artist),
-                            ),
-                          ),
-                        );
-                      },
-                    ),
-                    Column(
-                      children: [
-                        ElevatedButton(
-                          onPressed: _showReviewForm,
-                          child: Text("Ajouter un avis"),
-                        ),
-                        Expanded(
-                          child: reviews.isEmpty
-                              ? const Center(child: Text("Aucun avis"))
-                              : ReviewListView(reviews: reviews, displayReleaseCover: false,),
-                        ),
-                      ],
-                    ),
-                  ],
-                ),
-              ),
-            ],
+            ),
           ),
-        ),
-      ),
-    );
+        );
   }
 }
