@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:sonnow/pages/login_page.dart';
+import 'package:sonnow/pages/auth_page.dart';
 import 'package:sonnow/pages/profile_page.dart';
 import 'package:sonnow/pages/search_page.dart';
 import 'package:sonnow/pages/library_page.dart';
@@ -155,7 +155,7 @@ class AppState extends State<App> {
   Widget build(BuildContext context) {
     return MaterialApp(
       home:
-          isLogin ? _buildMainApp() : LoginPage(onLoginSuccess: onLoginSuccess),
+          isLogin ? _buildMainApp() : AuthPage(onLoginSuccess: onLoginSuccess),
     );
   }
 

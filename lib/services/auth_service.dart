@@ -23,7 +23,7 @@ class AuthService {
   }
 
 
-  Future<bool> register(String username, String email, String password) async {
+  Future<void> register(Map<String, String> credentials, Function onSuccess, Function(dynamic error) onError) async {
     final url = "${baseUrl}user/register/";
     final csrfToken = await getCsrfToken();
 
@@ -35,10 +35,21 @@ class AuthService {
         "Referer": baseUrl,
         "Cookie": "csrftoken=$csrfToken",
       },
-      body: jsonEncode({"username": username, "email": email, "password": password}),
+      body: jsonEncode({
+        "username": credentials['username'],
+        "email": credentials['email'],
+        "password": credentials['password'],
+      }),
     );
 
-    return response.statusCode == 201;
+    if (response.statusCode == 201) {
+      final data = jsonDecode(response.body);
+      await saveAuthToken(data);
+      onSuccess();
+    } else {
+      final errorData = jsonDecode(response.body);
+      onError(errorData['error'] ?? "Unknown error");
+    }
   }
 
   Future<bool> login(String username, String password) async {

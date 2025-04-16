@@ -78,13 +78,11 @@ class _EditProfilePageState extends State<EditProfilePage> {
   Widget build(BuildContext context) {
     Widget buildCircleAvatar() {
       if (isImageEdited) {
-        // Utiliser FileImage pour les images locales
         return CircleAvatar(
           radius: 100,
           backgroundImage: FileImage(File(pickedImage.path)),
         );
       } else {
-        // Utiliser NetworkImage pour les URL
         return CircleAvatar(
           radius: 100,
           backgroundImage: NetworkImage(user.profilePictureUrl),

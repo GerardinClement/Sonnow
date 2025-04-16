@@ -62,6 +62,9 @@ class _ProfilePageState extends State<ProfilePage> with RouteAware {
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
+    if (editable) {
+      _fetchUserInfo();
+    }
     routeObserver.subscribe(this, ModalRoute.of(context)!);
   }
 

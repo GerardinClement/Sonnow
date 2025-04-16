@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:sonnow/delayed_animation.dart';
-import 'package:sonnow/pages/login_page.dart';
+import 'package:sonnow/pages/auth_page.dart';
 
 class WelcomePage extends StatelessWidget {
   const WelcomePage({super.key});
@@ -45,7 +45,7 @@ class WelcomePage extends StatelessWidget {
                             ),
                             onPressed: () {
                               Navigator.push(context, MaterialPageRoute(
-                                  builder: (context) => LoginPage(
+                                  builder: (context) => AuthPage(
                                     onLoginSuccess: () {
                                       print("Login successful");
                                     },
