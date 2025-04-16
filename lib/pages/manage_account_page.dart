@@ -4,6 +4,8 @@ import 'package:sonnow/services/auth_service.dart';
 import 'package:sonnow/views/update_username_form_view.dart';
 import 'package:sonnow/views/update_password_form_view.dart';
 import 'package:sonnow/views/update_email_form_view.dart';
+import 'package:sonnow/views/delete_account_dialog_view.dart';
+import 'package:sonnow/app.dart';
 
 class ManageAccountPage extends StatefulWidget {
   final User user;
@@ -79,6 +81,22 @@ class _ManageAccountPageState extends State<ManageAccountPage> {
     );
   }
 
+  void _deleteAccount() {
+    showDialog(context: context,
+        builder: (context) {
+          return DeleteAccountDialog(
+            onSuccessDelete: () async {
+              await authService.logout(context, () {
+                Navigator.of(context, rootNavigator: true).pushAndRemoveUntil(
+                  MaterialPageRoute(builder: (context) => const App()),
+                      (route) => false,
+                );
+              });
+            },
+          );
+        });
+  }
+
   @override
   void dispose() {
     _usernameController.dispose();
@@ -141,12 +159,18 @@ class _ManageAccountPageState extends State<ManageAccountPage> {
                       child: Text("Change Password"),
                     ),
                     const SizedBox(height: 20),
+                    Spacer(),
                     ElevatedButton(
-                      onPressed: () {
-                        // Handle save action
-                      },
-                      child: const Text('Save Changes'),
-                    ),
+                        onPressed: () {
+                          _deleteAccount();
+                        },
+                        child: const Text(
+                            "Delete Account",
+                            style: TextStyle(
+                              color: Colors.red,
+                            )
+                        )
+                    )
                   ],
                 ),
               ),

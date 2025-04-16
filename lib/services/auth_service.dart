@@ -173,4 +173,18 @@ class AuthService {
     if (response.statusCode != 200) onError(data['error'] ?? "Unknown error");
   }
 
+  Future<void> deleteUserAccount(String password, Function onSuccess, Function(dynamic error) onError) async {
+    final Map<String, String> header = await setRequestHeader();
+
+    final response = await http.delete(
+      Uri.parse("${baseUrl}user/delete/"),
+      headers: header,
+      body: jsonEncode({"password": password}),
+    );
+
+    final data = jsonDecode(response.body);
+    if (response.statusCode == 200) onSuccess();
+    if (response.statusCode != 200) onError(data['message'] ?? "Unknown error");
+  }
+
 }
