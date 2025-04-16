@@ -7,7 +7,9 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
 from rest_framework_simplejwt.tokens import RefreshToken
-
+from django.contrib.auth.password_validation import validate_password
+from django.core.exceptions import ValidationError
+from django.core.validators import validate_email
 from users.utils import decode_json_body
 from django.contrib.auth.models import User
 
@@ -25,19 +27,46 @@ class RegisterView(APIView):
         data = request.data
         if isinstance(data, JsonResponse):
             return data
-        if all(key in data for key in required_keys):
-            try:
-                user = User.objects.create_user(data.get('username'), data.get('email'), data.get('password'))
-                user.save()
 
-                refresh = RefreshToken.for_user(user)
+        if not all(key in data for key in required_keys):
+            return Response({'status': 'error', 'message': 'Invalid request'},
+                            status=status.HTTP_400_BAD_REQUEST)
 
-                return Response({
-                    'status': 'success',
-                    'refresh': str(refresh),
-                    'access': str(refresh.access_token),
-                }, status=status.HTTP_201_CREATED)
-            except Exception as e:
-                return Response({'status': 'error', 'message': str(e)}, status=status.HTTP_400_BAD_REQUEST)
-        else:
-            return Response({'status': 'error', 'message': 'Données incomplètes'}, status=status.HTTP_400_BAD_REQUEST)
+        username = data.get('username')
+        email = data.get('email')
+        password = data.get('password')
+
+        if User.objects.filter(username=username).exists():
+            return Response({'status': 'error', 'message': 'This username is already taken'},
+                           status=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            validate_email(email)
+        except ValidationError:
+            return Response({'status': 'error', 'message': 'This email format is not valid'},
+                           status=status.HTTP_400_BAD_REQUEST)
+
+        if User.objects.filter(email=email).exists():
+            return Response({'status': 'error', 'message': 'This email is already taken'},
+                           status=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            user = User(username=username, email=email)
+            validate_password(password, user)
+        except ValidationError as e:
+            return Response({'status': 'error', 'message': e.messages},
+                           status=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            user = User.objects.create_user(username, email, password)
+
+            refresh = RefreshToken.for_user(user)
+
+            return Response({
+                'status': 'success',
+                'refresh': str(refresh),
+                'access': str(refresh.access_token),
+            }, status=status.HTTP_201_CREATED)
+        except Exception as e:
+            return Response({'status': 'error', 'message': str(e)},
+                           status=status.HTTP_400_BAD_REQUEST)

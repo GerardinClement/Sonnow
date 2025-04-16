@@ -114,7 +114,7 @@ class _ProfilePageState extends State<ProfilePage> with RouteAware {
               onPressed: () {
                 Navigator.of(
                   context,
-                ).push(MaterialPageRoute(builder: (context) => SettingsPage()));
+                ).push(MaterialPageRoute(builder: (context) => SettingsPage(user: user)));
               },
             ),
           if (!editable)

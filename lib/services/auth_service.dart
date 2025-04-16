@@ -48,7 +48,7 @@ class AuthService {
       onSuccess();
     } else {
       final errorData = jsonDecode(response.body);
-      onError(errorData['error'] ?? "Unknown error");
+      onError(errorData['message'] ?? "Error registering user, please try again.");
     }
   }
 
@@ -144,7 +144,7 @@ class AuthService {
     return false;
   }
 
-  Future<Map<String, dynamic>?> getUserInfo() async {
+  Future<Map<String, dynamic>?> getUserAccountInfo() async {
     final Map<String, String> header = await setRequestHeader();
 
     final response = await http.get(
@@ -157,6 +157,20 @@ class AuthService {
     } else {
       return null;
     }
+  }
+
+  Future<void> updateUserAccount(Map<String, String> credentials, Function onSuccess, Function(dynamic error) onError) async {
+    final Map<String, String> header = await setRequestHeader();
+
+    final response = await http.patch(
+      Uri.parse("${baseUrl}user/update/"),
+      headers: header,
+      body: jsonEncode(credentials),
+    );
+
+    final data = jsonDecode(response.body);
+    if (response.statusCode == 200) onSuccess();
+    if (response.statusCode != 200) onError(data['error'] ?? "Unknown error");
   }
 
 }

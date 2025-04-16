@@ -4,9 +4,9 @@ import 'package:sonnow/models/review.dart';
 
 class User {
   final String id;
-  final String username;
+  late String username;
   final String displayName;
-  final String email;
+  late String email;
   final String profilePictureUrl;
   final String bio;
   final Artist? highlightArtist;
@@ -17,9 +17,7 @@ class User {
 
   User({
     required this.id,
-    required this.username,
     required this.displayName,
-    required this.email,
     required this.profilePictureUrl,
     required this.bio,
     required this.highlightArtist,
@@ -29,13 +27,15 @@ class User {
     required this.followers,
   });
 
+  void setAccountInfo(Map<String, dynamic> json) {
+    username = json['username']?.toString() ?? "Unknown";
+    email = json['email']?.toString() ?? "Unknown";
+  }
+
   factory User.fromJson(Map<String, dynamic> json) {
-    String username = json['username']?.toString() ?? "Unknown";
     return User(
       id: json['id']?.toString() ?? "Unknown",
-      username: username,
-      displayName: json['display_name']?.toString() ?? username,
-      email: json['email']?.toString() ?? "Unknown",
+      displayName: json['display_name']?.toString() ?? "Unknown",
       profilePictureUrl: json['profile_picture']?.toString() ?? "",
       bio: json['bio']?.toString() ?? "",
       highlightArtist:

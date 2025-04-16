@@ -1,9 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:sonnow/services/auth_service.dart';
+import 'package:sonnow/models/user.dart';
+import 'package:sonnow/pages/manage_account_page.dart';
 import 'package:sonnow/app.dart';
 
 class SettingsPage extends StatefulWidget {
-  const SettingsPage({super.key});
+  final User user;
+  const SettingsPage({
+    super.key,
+    required this.user,
+  });
 
   @override
   State<SettingsPage> createState() => _SettingsPageState();
@@ -14,25 +20,47 @@ class _SettingsPageState extends State<SettingsPage> {
 
   Future<void> _logout() async {
     await authService.logout(context, () {
-      // Naviguer vers la racine et remplacer tout l'arbre de navigation
       Navigator.of(context, rootNavigator: true).pushAndRemoveUntil(
         MaterialPageRoute(builder: (context) => const App()),
-            (route) => false, // Supprime toutes les routes précédentes
+        (route) => false,
       );
     });
   }
-  
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Settings'),
+
+@override
+Widget build(BuildContext context) {
+  return Scaffold(
+    appBar: AppBar(title: const Text('Settings')),
+    body: Padding(
+      padding: const EdgeInsets.all(16.0),
+      child: Column(
+        children: [
+          ElevatedButton(
+            onPressed: () {
+              Navigator.of(context).push(
+                MaterialPageRoute(
+                  builder: (context) => ManageAccountPage(user: widget.user),
+                ),
+              );
+            },
+            child: Container(
+              width: double.infinity,
+              padding: const EdgeInsets.all(10),
+              child: const Text("Edit account"),
+            ),
+          ),
+          const SizedBox(height: 16), // Espace entre les boutons
+          ElevatedButton(
+            onPressed: _logout,
+            child: Container(
+              width: double.infinity,
+              padding: const EdgeInsets.all(10),
+              child: const Text("Logout"),
+            ),
+          ),
+        ],
       ),
-      body: Center(
-        child: ElevatedButton(
-            onPressed: _logout, 
-            child: Text("Logout")),
-      ),
-    );
-  }
+    ),
+  );
+}
 }

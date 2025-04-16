@@ -3,10 +3,8 @@ import 'package:sonnow/services/auth_service.dart';
 
 class RegisterForm extends StatefulWidget {
   final Function onRegisterSuccess;
-  const RegisterForm({
-    super.key,
-    required this.onRegisterSuccess,
-  });
+
+  const RegisterForm({super.key, required this.onRegisterSuccess});
 
   @override
   _RegisterFormState createState() => _RegisterFormState();
@@ -23,13 +21,23 @@ class _RegisterFormState extends State<RegisterForm> {
 
   dynamic onRegisterError(dynamic error) {
     setState(() {
-      _errorMessage =
-          "An error occurred during registration. Please check your information and try again.";
+      if (error is List) {
+        _errorMessage = error.map((e) => e.toString()).join('\n');
+      } else if (error.toString().startsWith('[') &&
+          error.toString().endsWith(']')) {
+        String content = error.toString().substring(
+          1,
+          error.toString().length - 1,
+        );
+        _errorMessage = content.split(',').map((e) => e.trim()).join('\n');
+      } else {
+        _errorMessage = error.toString();
+      }
       _successMessage = null;
     });
   }
 
-  Future<void> register() async{
+  Future<void> register() async {
     Map<String, String> credentials = {
       "username": usernameController.text,
       "email": emailController.text,
