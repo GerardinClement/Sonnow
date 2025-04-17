@@ -2,7 +2,6 @@ import 'package:hive/hive.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:sonnow/models/release.dart';
 import 'package:sonnow/models/artist.dart';
-import 'package:sonnow/models/user.dart';
 
 Future<void> addLikedReleasesInBox(List<Release> likedReleases) async {
   var box = await Hive.openBox("liked_releases");
@@ -38,6 +37,24 @@ Future<void> addLikedArtistsInBox(List<Artist> likedArtists) async {
   for (var artist in likedArtists) {
     box.put(artist.id, true);
   }
+}
+
+Future<bool> getIfReleaseIsLiked(String releaseId) async {
+  var box = await Hive.openBox("liked_releases");
+
+  return box.get(releaseId) != null;
+}
+
+Future<bool> getIfArtistIsLiked(String artistId) async {
+  var box = await Hive.openBox("liked_artists");
+
+  return box.get(artistId) != null;
+}
+
+Future<bool> getIfReleaseIsToListen(String releaseId) async {
+  var box = await Hive.openBox("to_listen_releases");
+
+  return box.get(releaseId) != null;
 }
 
 Future<bool> getIfArtistIsHighlighted(String artistId) async {

@@ -22,7 +22,7 @@ class _ManageAccountPageState extends State<ManageAccountPage> {
   final TextEditingController _usernameController = TextEditingController();
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
-  bool _obscureText = true;
+  final bool _obscureText = true;
   bool _isLoading = true;
 
   @override

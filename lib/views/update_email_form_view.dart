@@ -12,10 +12,10 @@ class UpdateEmailForm extends StatefulWidget {
   });
 
   @override
-  _UpdateEmailFormState createState() => _UpdateEmailFormState();
+  UpdateEmailFormState createState() => UpdateEmailFormState();
 }
 
-class _UpdateEmailFormState extends State<UpdateEmailForm> {
+class UpdateEmailFormState extends State<UpdateEmailForm> {
   final AuthService authService = AuthService();
   String? _errorMessage;
 

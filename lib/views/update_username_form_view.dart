@@ -12,7 +12,7 @@ class UpdateUsernameForm extends StatefulWidget {
     });
 
     @override
-    _UpdateUsernameFormState createState() => _UpdateUsernameFormState();
+    State<UpdateUsernameForm> createState() => _UpdateUsernameFormState();
   }
 
   class _UpdateUsernameFormState extends State<UpdateUsernameForm> {

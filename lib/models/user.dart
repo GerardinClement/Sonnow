@@ -14,6 +14,9 @@ class User {
   final List<Review> reviews;
   final List<User> follows;
   final List<User> followers;
+  final List<Release> toListenReleases;
+  final List<Release> likedReleases;
+  final List<Artist> likedArtists;
 
   User({
     required this.id,
@@ -25,6 +28,9 @@ class User {
     required this.reviews,
     required this.follows,
     required this.followers,
+    required this.toListenReleases,
+    required this.likedReleases,
+    required this.likedArtists,
   });
 
   void setAccountInfo(Map<String, dynamic> json) {
@@ -62,6 +68,24 @@ class User {
           json['followers'] != null
               ? List<User>.from(
                 json['followers'].map((user) => User.fromJson(user)),
+              )
+              : [],
+      toListenReleases:
+          json['to_listen_releases'] != null
+              ? List<Release>.from(
+                json['to_listen_releases'].map((release) => Release.fromJson(release['release'])),
+              )
+              : [],
+      likedReleases:
+          json['liked_releases'] != null
+              ? List<Release>.from(
+                json['liked_releases'].map((release) => Release.fromJson(release['release'])),
+              )
+              : [],
+      likedArtists:
+          json['liked_artists'] != null
+              ? List<Artist>.from(
+                json['liked_artists'].map((artist) => Artist.fromJson(artist['artist'])),
               )
               : [],
     );

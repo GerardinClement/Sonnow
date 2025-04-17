@@ -7,7 +7,7 @@ class AuthPage extends StatefulWidget {
   const AuthPage({super.key , required this.onLoginSuccess});
 
   @override
-  _AuthPageState createState() => _AuthPageState();
+  State<AuthPage> createState() => _AuthPageState();
 }
 
 class _AuthPageState extends State<AuthPage> {

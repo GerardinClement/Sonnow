@@ -7,7 +7,7 @@ class DeleteAccountDialog extends StatefulWidget {
   const DeleteAccountDialog({super.key, required this.onSuccessDelete});
 
   @override
-  _DeleteAccountDialogState createState() => _DeleteAccountDialogState();
+  State<DeleteAccountDialog> createState() => _DeleteAccountDialogState();
 }
 
 class _DeleteAccountDialogState extends State<DeleteAccountDialog> {

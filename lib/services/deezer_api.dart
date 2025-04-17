@@ -1,4 +1,3 @@
-import 'package:flutter/material.dart';
 import 'package:sonnow/models/release.dart';
 import 'package:sonnow/models/artist.dart';
 import 'package:sonnow/models/track.dart';

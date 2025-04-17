@@ -7,7 +7,6 @@ import 'package:sonnow/services/user_profile_service.dart';
 import 'package:sonnow/views/release_card_view.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:sonnow/services/user_library_service.dart';
-import 'package:sonnow/services/user_profile_service.dart';
 
 class ArtistPage extends StatefulWidget {
   final Artist artist;
@@ -15,7 +14,7 @@ class ArtistPage extends StatefulWidget {
   const ArtistPage({super.key, required this.artist});
 
   @override
-  _ArtistPageState createState() => _ArtistPageState();
+  State<ArtistPage> createState() => _ArtistPageState();
 }
 
 class _ArtistPageState extends State<ArtistPage> {

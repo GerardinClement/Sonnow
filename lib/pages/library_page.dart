@@ -1,4 +1,3 @@
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:sonnow/services/user_library_service.dart';
 import 'package:sonnow/models/release.dart';
@@ -8,13 +7,12 @@ import 'package:sonnow/views/release_card_view.dart';
 import 'package:sonnow/globals.dart';
 import 'package:sonnow/pages/list_releases_page.dart';
 import 'package:sonnow/pages/list_artists_page.dart';
-import 'package:sonnow/pages/artist_page.dart';
 
 class LibraryPage extends StatefulWidget {
   const LibraryPage({super.key});
 
   @override
-  _LibraryPageState createState() => _LibraryPageState();
+  State<LibraryPage> createState() => _LibraryPageState();
 }
 
 class _LibraryPageState extends State<LibraryPage> with RouteAware {

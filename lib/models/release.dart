@@ -13,6 +13,7 @@ class Release {
   List<String>? genre;
   late bool isLiked = false;
   late bool toListen = false;
+  late bool isHighlighted = false;
 
 
   Release({
@@ -97,7 +98,7 @@ class Release {
           : [],
       type: json['record_type']?.toString() ?? json['type']?.toString() ?? "Unknown",
       date: json['release_date']?.toString() ?? "Unknown",
-      imageUrl: json['cover_medium']?.toString() ?? "Unknown",
+      imageUrl: json['cover_big']?.toString() ?? "Unknown",
       genre: json['genres']['data'] != null
           ? List<String>.from(json['genres']['data'].map((genre) => genre["name"].toString()))
           : [],

@@ -15,7 +15,7 @@ class ProfilePage extends StatefulWidget {
   const ProfilePage({super.key, required this.user});
 
   @override
-  _ProfilePageState createState() => _ProfilePageState();
+  State<ProfilePage> createState() => _ProfilePageState();
 }
 
 class _ProfilePageState extends State<ProfilePage> with RouteAware {

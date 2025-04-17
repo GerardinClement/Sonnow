@@ -3,6 +3,7 @@ from rest_framework.response import Response
 from .models import Profile
 from artists.serializers import ArtistSerializer
 from releases.serializers import ReleaseSerializer
+from user_library.serializers import ToListenSerializer, LikedReleaseSerializer, LikedArtistSerializer
 
 
 class SimpleProfileSerializer(serializers.ModelSerializer):
@@ -29,6 +30,9 @@ class ProfileSerializer(serializers.ModelSerializer):
         required=False,
         write_only=True
     )
+    liked_releases = LikedReleaseSerializer(many=True, read_only=True)
+    liked_artists = LikedArtistSerializer(many=True, read_only=True)
+    to_listen_releases = ToListenSerializer(many=True, read_only=True)
 
     class Meta:
         model = Profile
@@ -45,7 +49,10 @@ class ProfileSerializer(serializers.ModelSerializer):
             'reviews',
             'follows',
             'follows_ids',
-            'followers'
+            'followers',
+            'liked_releases',
+            'liked_artists',
+            'to_listen_releases'
         ]
         read_only_fields = ['user']
 

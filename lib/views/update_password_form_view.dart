@@ -5,7 +5,7 @@ class UpdatePasswordForm extends StatefulWidget {
   const UpdatePasswordForm({super.key});
 
   @override
-  _UpdatePasswordFormState createState() => _UpdatePasswordFormState();
+  State<UpdatePasswordForm> createState() => _UpdatePasswordFormState();
 }
 
 class _UpdatePasswordFormState extends State<UpdatePasswordForm> {

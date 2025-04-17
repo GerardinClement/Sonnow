@@ -14,7 +14,7 @@ class ListReleasesPage extends StatefulWidget {
 class _ListReleasesPageState extends State<ListReleasesPage> {
   late List<Release> releases = widget.releases;
   late List<Release> _filteredReleases = releases;
-  late List<String> _filterTypes = createFilterType(releases);
+  late final List<String> _filterTypes = createFilterType(releases);
   String _selectedFilter = "";
 
 
@@ -49,7 +49,7 @@ Widget build(BuildContext context) {
         children: [
           Padding(
             padding: const EdgeInsets.fromLTRB(16.0, 0, 8.0, 8.0),
-            child: Container(
+            child: SizedBox(
               width: double.infinity,
               child: Wrap(
                 spacing: 8.0,

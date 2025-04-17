@@ -7,7 +7,7 @@ class RegisterForm extends StatefulWidget {
   const RegisterForm({super.key, required this.onRegisterSuccess});
 
   @override
-  _RegisterFormState createState() => _RegisterFormState();
+  State<RegisterForm> createState() => _RegisterFormState();
 }
 
 class _RegisterFormState extends State<RegisterForm> {

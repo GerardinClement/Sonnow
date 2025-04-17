@@ -8,13 +8,12 @@ import 'package:sonnow/services/auth_service.dart';
 import 'package:sonnow/services/user_library_service.dart';
 import 'package:sonnow/services/user_library_storage.dart';
 import 'package:sonnow/services/user_profile_service.dart';
-import 'package:sonnow/models/release.dart';
-import 'package:sonnow/models/artist.dart';
 import 'package:sonnow/models/user.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:sonnow/models/tab_item.dart';
 import 'package:sonnow/layouts/bottom_navigation.dart';
 import 'package:sonnow/globals.dart';
+import 'package:sonnow/themes/app_theme.dart';
 
 class App extends StatefulWidget {
   const App({super.key});
@@ -76,9 +75,6 @@ class AppState extends State<App> {
   }
 
   void onLoginSuccess() async {
-    await _getLikedReleases();
-    await _getToListenReleases();
-    await _getLikedArtists();
     await _getUserProfile();
     setState(() {
       isLogin = true;
@@ -101,6 +97,9 @@ class AppState extends State<App> {
     }
     await _getFollowing(user);
     await _getFollowers(user);
+    await addLikedArtistsInBox(user.likedArtists);
+    await addLikedReleasesInBox(user.likedReleases);
+    await addToListenReleasesInBox(user.toListenReleases);
   }
 
   Future<void> _getFollowing(User user) async {
@@ -115,36 +114,16 @@ class AppState extends State<App> {
     }
   }
 
-  Future<void> _getLikedArtists() async {
-    clearLikedArtistsBox();
-    final List<Artist> likedArtists =
-        await userLibraryService.fetchUserLikedArtists();
-    await addLikedArtistsInBox(likedArtists);
-  }
-
-  Future<void> _getLikedReleases() async {
-    clearLikedReleasesBox();
-    final List<Release> likedRelease =
-        await userLibraryService.fetchUserLikedReleases();
-    await addLikedReleasesInBox(likedRelease);
-  }
-
-  Future<void> _getToListenReleases() async {
-    clearToListenReleasesBox();
-    final List<Release> toListenReleases =
-        await userLibraryService.fetchUserToListenReleases();
-    await addToListenReleasesInBox(toListenReleases);
-  }
-
   Future<void> _checkLoginStatus() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     isLogin = await AuthService().checkIfLoggedIn();
     if (isLogin) {
-      _getLikedReleases();
-      _getToListenReleases();
       final user = await userProfileService.fetchUserProfile();
       _getFollowers(user);
       _getFollowing(user);
+      await addLikedArtistsInBox(user.likedArtists);
+      await addLikedReleasesInBox(user.likedReleases);
+      await addToListenReleasesInBox(user.toListenReleases);
     }
     setState(() {
       isLogin = isLogin;
@@ -154,6 +133,7 @@ class AppState extends State<App> {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
+      theme: AppTheme.lightTheme,
       home:
           isLogin ? _buildMainApp() : AuthPage(onLoginSuccess: onLoginSuccess),
     );
