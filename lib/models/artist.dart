@@ -8,6 +8,7 @@ class Artist {
   Map<String, List<Release>> releaseByType = {};
   List<Release> releases = [];
   bool isLiked = false;
+  bool isHighlighted = false;
 
   Artist({
     required this.name,

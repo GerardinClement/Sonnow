@@ -25,8 +25,6 @@ class _AuthPageState extends State<AuthPage> {
 
   @override
   Widget build(BuildContext context) {
-    final loginPage = context.findAncestorWidgetOfExactType<AuthPage>();
-
     return Scaffold(
       appBar: AppBar(
         title: Text(isLogin ? 'Login Page' : 'Register Page'),

@@ -395,49 +395,68 @@ class _ReleasePageState extends State<ReleasePage> {
           length: 2,
           child: Scaffold(
             extendBodyBehindAppBar: true,
-            appBar: AppBar(
-              backgroundColor: Colors.transparent,
-              leading: IconButton(
-                icon: Icon(Icons.arrow_back, color: Colors.white),
-                onPressed: () => Navigator.pop(context),
+            appBar: PreferredSize(
+              preferredSize: Size.fromHeight(kToolbarHeight),
+              child: Container(
+                decoration: const BoxDecoration(
+                  gradient: LinearGradient(
+                    begin: Alignment.topCenter,
+                    end: Alignment.bottomCenter,
+                    colors: [
+                      Color.fromRGBO(171, 171, 171, 0.3),
+                      Color.fromRGBO(171, 171, 171, 0.3),
+                      Color.fromRGBO(171, 171, 171, 0.2),
+                      Color.fromRGBO(171, 171, 171, 0.1),
+                      Color.fromRGBO(171, 171, 171, 0.0),
+                    ],
+                  ),
+                ),
+                child: AppBar(
+                  backgroundColor: Colors.transparent, // important
+                  elevation: 0,
+                  leading: IconButton(
+                    icon: const Icon(Icons.arrow_back, color: Colors.white),
+                    onPressed: () => Navigator.pop(context),
+                  ),
+                  actions: [
+                    IconButton(
+                      onPressed: () => toggleLike(),
+                      icon: Icon(
+                        release.isLiked
+                            ? Icons.favorite
+                            : Icons.favorite_border,
+                        color: release.isLiked ? Colors.red : Colors.white,
+                      ),
+                    ),
+                    IconButton(
+                      onPressed: () => toggleToListen(),
+                      icon: Icon(
+                        release.toListen
+                            ? Icons.add_circle
+                            : Icons.add_circle_outline_outlined,
+                        color: release.toListen ? Colors.green : Colors.white,
+                      ),
+                    ),
+                    IconButton(
+                      onPressed: () => toggleHighlight(),
+                      icon: Icon(
+                        release.isHighlighted ? Icons.star : Icons.star_border,
+                        color:
+                            release.isHighlighted
+                                ? Colors.yellow
+                                : Colors.white,
+                      ),
+                    ),
+                  ],
+                ),
               ),
-              actions: [
-                IconButton(
-                  onPressed: () {
-                    toggleLike();
-                  },
-                  icon: Icon(
-                    release.isLiked ? Icons.favorite : Icons.favorite_border,
-                    color: release.isLiked ? Colors.red : Colors.white,
-                  ),
-                ),
-                IconButton(
-                  onPressed: () {
-                    toggleToListen();
-                  },
-                  icon: Icon(
-                    release.toListen
-                        ? Icons.add_circle
-                        : Icons.add_circle_outline_outlined,
-                    color: release.toListen ? Colors.green : Colors.white,
-                  ),
-                ),
-                IconButton(
-                  onPressed: () {
-                    toggleHighlight();
-                  },
-                  icon: Icon(
-                    release.isHighlighted ? Icons.star : Icons.star_border,
-                    color: release.isHighlighted ? Colors.yellow : Colors.white,
-                  ),
-                ),
-              ],
             ),
-            body: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                ClipRRect(
-                  child: Image.network(
+            body: SingleChildScrollView(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // Image de couverture
+                  Image.network(
                     release.imageUrl,
                     width: MediaQuery.of(context).size.width,
                     height: MediaQuery.of(context).size.width,
@@ -449,71 +468,98 @@ class _ReleasePageState extends State<ReleasePage> {
                       );
                     },
                   ),
-                ),
-                SizedBox(width: 20),
-                Expanded(
-                  child: Padding(
-                    padding: EdgeInsets.symmetric(horizontal: 16),
+                  const SizedBox(height: 20),
+                  // Informations de l'album
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 16),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text(release.title, style: TextStyle(fontSize: 18)),
+                        Text(
+                          release.title,
+                          style: const TextStyle(fontSize: 18),
+                        ),
                         release.contributors.isNotEmpty
                             ? ContributorsList(
                               contributors: release.contributors,
                             )
                             : ContributorsList(contributors: [release.artist]),
-                        Text(release.type, style: TextStyle(fontSize: 18)),
-                        Text(release.date, style: TextStyle(fontSize: 18)),
+                        Text(
+                          release.type,
+                          style: const TextStyle(fontSize: 18),
+                        ),
+                        Text(
+                          release.date,
+                          style: const TextStyle(fontSize: 18),
+                        ),
                       ],
                     ),
                   ),
-                ),
-                SizedBox(height: 20),
-                TabBar(tabs: [Tab(text: "Tracklist"), Tab(text: "Avis")]),
-                Expanded(
-                  child: TabBarView(
-                    children: [
-                      ListView.builder(
-                        itemCount: release.tracklist.length,
-                        itemBuilder: (context, index) {
-                          return InkWell(
-                            onTap: () async {
-                              print("Display track detail");
-                            },
-                            child: ListTile(
-                              leading: Text(
-                                "${release.tracklist[index].position}",
+                  // Onglets sans TabBarView
+                  TabBar(
+                    tabs: const [Tab(text: "Tracklist"), Tab(text: "Avis")],
+                    onTap: (index) => setState(() {}),
+                  ),
+                  // Contenu de l'onglet sélectionné
+                  Builder(
+                    builder: (context) {
+                      final tabController = DefaultTabController.of(context);
+                      if (tabController.index == 0) {
+                        // Onglet Tracklist
+                        return ListView.builder(
+                          shrinkWrap: true,
+                          physics: const NeverScrollableScrollPhysics(),
+                          padding: EdgeInsets.zero,
+                          itemCount: release.tracklist.length,
+                          itemBuilder: (context, index) {
+                            return InkWell(
+                              onTap: () async {
+                                print("Display track detail");
+                              },
+                              child: ListTile(
+                                leading: Text(
+                                  "${release.tracklist[index].position}",
+                                ),
+                                title: Text(release.tracklist[index].title),
+                                subtitle: Text(
+                                  getArtistNames(
+                                    release.tracklist[index].artist,
+                                  ),
+                                ),
                               ),
-                              title: Text(release.tracklist[index].title),
-                              subtitle: Text(
-                                getArtistNames(release.tracklist[index].artist),
+                            );
+                          },
+                        );
+                      } else {
+                        // Onglet Avis
+                        return Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Padding(
+                              padding: const EdgeInsets.all(16),
+                              child: ElevatedButton(
+                                onPressed: _showReviewForm,
+                                child: const Text("Ajouter un avis"),
                               ),
                             ),
-                          );
-                        },
-                      ),
-                      Column(
-                        children: [
-                          ElevatedButton(
-                            onPressed: _showReviewForm,
-                            child: Text("Ajouter un avis"),
-                          ),
-                          Expanded(
-                            child:
-                                reviews.isEmpty
-                                    ? const Center(child: Text("Aucun avis"))
-                                    : ReviewListView(
-                                      reviews: reviews,
-                                      displayReleaseCover: false,
-                                    ),
-                          ),
-                        ],
-                      ),
-                    ],
+                            reviews.isEmpty
+                                ? const Center(
+                                  child: Padding(
+                                    padding: EdgeInsets.all(16),
+                                    child: Text("Aucun avis"),
+                                  ),
+                                )
+                                : ReviewListView(
+                                  reviews: reviews,
+                                  displayReleaseCover: false,
+                                ),
+                          ],
+                        );
+                      }
+                    },
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
           ),
         );

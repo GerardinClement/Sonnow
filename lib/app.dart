@@ -9,7 +9,6 @@ import 'package:sonnow/services/user_library_service.dart';
 import 'package:sonnow/services/user_library_storage.dart';
 import 'package:sonnow/services/user_profile_service.dart';
 import 'package:sonnow/models/user.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 import 'package:sonnow/models/tab_item.dart';
 import 'package:sonnow/layouts/bottom_navigation.dart';
 import 'package:sonnow/globals.dart';
@@ -46,12 +45,6 @@ class AppState extends State<App> {
       icon: Icons.library_music_rounded,
       page: LibraryPage(),
       index: 2,
-    ),
-    TabItem(
-      tabName: "Home",
-      icon: Icons.home,
-      page: HomePage(),
-      index: 3,
     ),
   ];
 
@@ -115,7 +108,6 @@ class AppState extends State<App> {
   }
 
   Future<void> _checkLoginStatus() async {
-    SharedPreferences prefs = await SharedPreferences.getInstance();
     isLogin = await AuthService().checkIfLoggedIn();
     if (isLogin) {
       final user = await userProfileService.fetchUserProfile();
@@ -142,13 +134,21 @@ class AppState extends State<App> {
   Widget _buildMainApp() {
     return PopScope(
       child: Scaffold(
-        body: IndexedStack(
-          index: currentTab,
-          children: tabs.map((e) => e.page).toList(),
-        ),
-        bottomNavigationBar: BottomNavigation(
-          onSelectTab: _selectTab,
-          tabs: tabs,
+        body: Stack(
+          children: [
+            // Contenu principal qui s'étend jusqu'au bas de l'écran
+            IndexedStack(
+              index: currentTab,
+              children: tabs.map((e) => e.page).toList(),
+            ),
+
+            // Barre de navigation flottante superposée au contenu
+            BottomNavigation(
+              currentIndex: currentTab,
+              onSelectTab: _selectTab,
+              tabs: tabs,
+            ),
+          ],
         ),
       ),
     );

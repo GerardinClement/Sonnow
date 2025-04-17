@@ -70,7 +70,7 @@ class Track {
           ? (json['contributors'] as List).map((e) => Artist.fromJson(e)).toList()
           : [Artist.fromJson(json['artist'])],
       date: json['release_date']?.toString() ?? "Unknown",
-      position: json['position'] ?? 0,
+      position: json['track_position'] ?? 0,
     );
   }
 }

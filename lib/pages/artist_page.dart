@@ -37,10 +37,11 @@ class _ArtistPageState extends State<ArtistPage> {
   Future<void> _fetchArtist() async {
     try {
       if (artist.releases.isEmpty) {
+        artist.isHighlighted = await getIfArtistIsHighlighted(artist.id);
+        artist.isLiked = await getIfArtistIsLiked(artist.id);
         artist.releases = await DeezerApi.getArtistAlbums(artist);
         artist.setReleasesByType(artist.releases);
         isHighlighted = await getIfArtistIsHighlighted(artist.id);
-        print("Artist releases: ${artist.releases}");
       }
       if (mounted) {
         setState(() {

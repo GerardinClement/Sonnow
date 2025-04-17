@@ -82,6 +82,9 @@ class ReviewListView extends StatelessWidget {
                             width: 50,
                             height: 50,
                             fit: BoxFit.cover,
+                            errorBuilder: (context, error, stackTrace) {
+                              return const SizedBox(width: 50, height: 50);
+                            },
                           ),
                         ),
                         const SizedBox(width: 12.0),
