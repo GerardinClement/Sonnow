@@ -19,12 +19,21 @@ class _SettingsPageState extends State<SettingsPage> {
   final AuthService authService = AuthService();
 
   Future<void> _logout() async {
-    await authService.logout(context, () {
-      Navigator.of(context, rootNavigator: true).pushAndRemoveUntil(
+    try {
+      await authService.logout();
+
+      if (!mounted) return;
+
+      Navigator.of(context).popUntil((route) => route.isFirst);
+      Navigator.of(context).pushReplacement(
         MaterialPageRoute(builder: (context) => const App()),
-        (route) => false,
       );
-    });
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("Erreur lors de la déconnexion: $e")),
+      );
+    }
   }
 
 @override

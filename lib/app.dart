@@ -3,7 +3,6 @@ import 'package:sonnow/pages/auth_page.dart';
 import 'package:sonnow/pages/profile_page.dart';
 import 'package:sonnow/pages/search_page.dart';
 import 'package:sonnow/pages/library_page.dart';
-import 'package:sonnow/pages/home_page.dart';
 import 'package:sonnow/services/auth_service.dart';
 import 'package:sonnow/services/user_library_service.dart';
 import 'package:sonnow/services/user_library_storage.dart';
@@ -13,6 +12,7 @@ import 'package:sonnow/models/tab_item.dart';
 import 'package:sonnow/layouts/bottom_navigation.dart';
 import 'package:sonnow/globals.dart';
 import 'package:sonnow/themes/app_theme.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class App extends StatefulWidget {
   const App({super.key});
@@ -52,7 +52,7 @@ class AppState extends State<App> {
     if (index == currentTab) {
       tabs[index].key.currentState?.popUntil((route) => route.isFirst);
     } else {
-      setState(() => currentTab = index);
+      if (mounted) setState(() => currentTab = index);
     }
 
     if (tabs[index].tabName == 'Library') {
@@ -69,9 +69,11 @@ class AppState extends State<App> {
 
   void onLoginSuccess() async {
     await _getUserProfile();
-    setState(() {
-      isLogin = true;
-    });
+    if (mounted) {
+      setState(() {
+        isLogin = true;
+      });
+    }
   }
 
   @override
@@ -81,7 +83,9 @@ class AppState extends State<App> {
   }
 
   Future<void> _getUserProfile() async {
+    final SharedPreferences prefs = await SharedPreferences.getInstance();
     final User user = await userProfileService.fetchUserProfile();
+    prefs.setString("userId", user.id);
     if (user.highlightRelease != null) {
       await addHighlightReleaseInBox(user.highlightRelease!);
     }
@@ -110,16 +114,20 @@ class AppState extends State<App> {
   Future<void> _checkLoginStatus() async {
     isLogin = await AuthService().checkIfLoggedIn();
     if (isLogin) {
+      final SharedPreferences prefs = await SharedPreferences.getInstance();
       final user = await userProfileService.fetchUserProfile();
+      prefs.setString("userId", user.id);
       _getFollowers(user);
       _getFollowing(user);
       await addLikedArtistsInBox(user.likedArtists);
       await addLikedReleasesInBox(user.likedReleases);
       await addToListenReleasesInBox(user.toListenReleases);
     }
-    setState(() {
-      isLogin = isLogin;
-    });
+    if (mounted) {
+      setState(() {
+        isLogin = isLogin;
+      });
+    }
   }
 
   @override

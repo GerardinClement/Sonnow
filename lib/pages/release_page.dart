@@ -8,8 +8,12 @@ import 'package:sonnow/services/review_service.dart';
 import 'package:sonnow/services/user_library_service.dart';
 import 'package:sonnow/services/user_library_storage.dart';
 import 'package:sonnow/services/user_profile_service.dart';
+import 'package:sonnow/pages/artist_page.dart';
+import 'package:sonnow/pages/profile_page.dart';
 import 'package:sonnow/views/review_list_view.dart';
 import 'package:sonnow/views/contributors_list_view.dart';
+import 'package:sonnow/widgets/custom_fab_location.dart';
+import 'package:sonnow/widgets/quick_actions_widget.dart';
 
 class ReleasePage extends StatefulWidget {
   final Release release;
@@ -30,6 +34,7 @@ class _ReleasePageState extends State<ReleasePage> {
   Map<int, String> selectedTags = {};
   late Release release;
   late bool isLoading = true;
+  bool _isQuickActionVisible = false;
 
   @override
   void initState() {
@@ -231,6 +236,8 @@ class _ReleasePageState extends State<ReleasePage> {
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
+      useRootNavigator: true,
+      useSafeArea: true,
       builder: (BuildContext context) {
         String content = "";
 
@@ -412,155 +419,210 @@ class _ReleasePageState extends State<ReleasePage> {
                   ),
                 ),
                 child: AppBar(
-                  backgroundColor: Colors.transparent, // important
+                  backgroundColor: Colors.transparent,
                   elevation: 0,
                   leading: IconButton(
                     icon: const Icon(Icons.arrow_back, color: Colors.white),
                     onPressed: () => Navigator.pop(context),
                   ),
-                  actions: [
-                    IconButton(
-                      onPressed: () => toggleLike(),
-                      icon: Icon(
-                        release.isLiked
-                            ? Icons.favorite
-                            : Icons.favorite_border,
-                        color: release.isLiked ? Colors.red : Colors.white,
-                      ),
-                    ),
-                    IconButton(
-                      onPressed: () => toggleToListen(),
-                      icon: Icon(
-                        release.toListen
-                            ? Icons.add_circle
-                            : Icons.add_circle_outline_outlined,
-                        color: release.toListen ? Colors.green : Colors.white,
-                      ),
-                    ),
-                    IconButton(
-                      onPressed: () => toggleHighlight(),
-                      icon: Icon(
-                        release.isHighlighted ? Icons.star : Icons.star_border,
-                        color:
-                            release.isHighlighted
-                                ? Colors.yellow
-                                : Colors.white,
-                      ),
-                    ),
-                  ],
                 ),
               ),
             ),
-            body: SingleChildScrollView(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  // Image de couverture
-                  Image.network(
-                    release.imageUrl,
-                    width: MediaQuery.of(context).size.width,
-                    height: MediaQuery.of(context).size.width,
-                    fit: BoxFit.cover,
-                    errorBuilder: (context, error, stackTrace) {
-                      return SizedBox(
+            body: Stack(
+              children: [
+                SingleChildScrollView(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      // Image de couverture
+                      Image.network(
+                        release.imageUrl,
                         width: MediaQuery.of(context).size.width,
                         height: MediaQuery.of(context).size.width,
-                      );
-                    },
-                  ),
-                  const SizedBox(height: 20),
-                  // Informations de l'album
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 16),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          release.title,
-                          style: const TextStyle(fontSize: 18),
-                        ),
-                        release.contributors.isNotEmpty
-                            ? ContributorsList(
-                              contributors: release.contributors,
-                            )
-                            : ContributorsList(contributors: [release.artist]),
-                        Text(
-                          release.type,
-                          style: const TextStyle(fontSize: 18),
-                        ),
-                        Text(
-                          release.date,
-                          style: const TextStyle(fontSize: 18),
-                        ),
-                      ],
-                    ),
-                  ),
-                  // Onglets sans TabBarView
-                  TabBar(
-                    tabs: const [Tab(text: "Tracklist"), Tab(text: "Avis")],
-                    onTap: (index) => setState(() {}),
-                  ),
-                  // Contenu de l'onglet sélectionné
-                  Builder(
-                    builder: (context) {
-                      final tabController = DefaultTabController.of(context);
-                      if (tabController.index == 0) {
-                        // Onglet Tracklist
-                        return ListView.builder(
-                          shrinkWrap: true,
-                          physics: const NeverScrollableScrollPhysics(),
-                          padding: EdgeInsets.zero,
-                          itemCount: release.tracklist.length,
-                          itemBuilder: (context, index) {
-                            return InkWell(
-                              onTap: () async {
-                                print("Display track detail");
-                              },
-                              child: ListTile(
-                                leading: Text(
-                                  "${release.tracklist[index].position}",
-                                ),
-                                title: Text(release.tracklist[index].title),
-                                subtitle: Text(
-                                  getArtistNames(
-                                    release.tracklist[index].artist,
-                                  ),
-                                ),
-                              ),
-                            );
-                          },
-                        );
-                      } else {
-                        // Onglet Avis
-                        return Column(
+                        fit: BoxFit.cover,
+                        errorBuilder: (context, error, stackTrace) {
+                          return SizedBox(
+                            width: MediaQuery.of(context).size.width,
+                            height: MediaQuery.of(context).size.width,
+                          );
+                        },
+                      ),
+                      const SizedBox(height: 20),
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 16),
+                        child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Padding(
-                              padding: const EdgeInsets.all(16),
-                              child: ElevatedButton(
-                                onPressed: _showReviewForm,
-                                child: const Text("Ajouter un avis"),
+                            Text(
+                              release.title,
+                              style: const TextStyle(
+                                fontSize: 32,
+                                fontWeight: FontWeight.bold,
+                                fontFamily: "CooperHewitt",
                               ),
                             ),
-                            reviews.isEmpty
-                                ? const Center(
-                                  child: Padding(
-                                    padding: EdgeInsets.all(16),
-                                    child: Text("Aucun avis"),
-                                  ),
+                            release.contributors.isNotEmpty
+                                ? ContributorsList(
+                                  contributors: release.contributors,
                                 )
-                                : ReviewListView(
-                                  reviews: reviews,
-                                  displayReleaseCover: false,
+                                : ContributorsList(
+                                  contributors: [release.artist],
                                 ),
+                            Text(
+                              release.date,
+                              style: const TextStyle(
+                                fontSize: 12,
+                                fontWeight: FontWeight.w300,
+                              ),
+                            ),
                           ],
-                        );
-                      }
-                    },
+                        ),
+                      ),
+                      // Onglets sans TabBarView
+                      TabBar(
+                        tabs: const [Tab(text: "Tracklist"), Tab(text: "Avis")],
+                        onTap: (index) => setState(() {}),
+                      ),
+                      Builder(
+                        builder: (context) {
+                          final tabController = DefaultTabController.of(
+                            context,
+                          );
+                          if (tabController.index == 0) {
+                            // Onglet Tracklist
+                            return Padding(
+                              padding: EdgeInsets.only(bottom: 100),
+                              child: ListView.builder(
+                                shrinkWrap: true,
+                                physics: const NeverScrollableScrollPhysics(),
+                                padding: EdgeInsets.zero,
+                                itemCount: release.tracklist.length,
+                                itemBuilder: (context, index) {
+                                  return InkWell(
+                                    onTap: () async {
+                                      print("Display track detail");
+                                    },
+                                    child: ListTile(
+                                      leading: Text(
+                                        "${release.tracklist[index].position}",
+                                      ),
+                                      title: Text(
+                                        release.tracklist[index].title,
+                                      ),
+                                      subtitle: Text(
+                                        getArtistNames(
+                                          release.tracklist[index].artist,
+                                        ),
+                                      ),
+                                    ),
+                                  );
+                                },
+                              ),
+                            );
+                          } else {
+                            // Onglet Avis
+                            return Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                reviews.isEmpty
+                                    ? Center(
+                                      child: Padding(
+                                        padding: const EdgeInsets.all(16),
+                                        child: Column(
+                                          children: [
+                                            const Text("No reviews yet"),
+                                            const Text(
+                                              "Be the first to review!",
+                                            ),
+                                            ElevatedButton(
+                                              onPressed:
+                                                  () => _showReviewForm(),
+                                              child: const Text("Add a review"),
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                    )
+                                    : Padding(
+                                      padding: const EdgeInsets.only(
+                                        bottom: 100,
+                                      ),
+                                      child: ReviewListView(
+                                        reviews: reviews,
+                                        displayReleaseCover: false,
+                                        onProfile: false,
+                                        onSeeProfile: (review) {
+                                          // Navigation vers la page de l'utilisateur
+                                          Navigator.push(
+                                            context,
+                                            MaterialPageRoute(
+                                              builder: (context) =>
+                                                  ProfilePage(
+                                                user: review.user,
+                                              ),
+                                            ),
+                                          );
+                                        },
+                                        onSeeRelease: null,
+                                        onSeeArtist: (review) {
+                                          // Navigation vers la page de l'artiste
+                                          Navigator.push(
+                                            context,
+                                            MaterialPageRoute(
+                                              builder:
+                                                  (context) => ArtistPage(
+                                                    artist:
+                                                        review.release.artist,
+                                                  ),
+                                            ),
+                                          );
+                                        },
+                                      ),
+                                    ),
+                              ],
+                            );
+                          }
+                        },
+                      ),
+                    ],
                   ),
-                ],
-              ),
+                ),
+
+                if (_isQuickActionVisible)
+                  Positioned(
+                    right: 30,
+                    bottom: 160,
+                    child: Container(
+                      padding: const EdgeInsets.all(8),
+                      decoration: BoxDecoration(
+                        color: Theme.of(context).cardColor,
+                        borderRadius: BorderRadius.circular(16),
+                        boxShadow: [
+                          BoxShadow(color: Colors.black26, blurRadius: 10),
+                        ],
+                      ),
+                      child: QuickActions(
+                        onLike: toggleLike,
+                        onAddToListen: toggleToListen,
+                        onAddHighlight: toggleHighlight,
+                        openReviewForm: _showReviewForm,
+                        isLiked: release.isLiked,
+                        isToListen: release.toListen,
+                        isHighlighted: release.isHighlighted,
+                      ),
+                    ),
+                  ),
+              ],
             ),
+            floatingActionButton: FloatingActionButton(
+              onPressed: () {
+                setState(() {
+                  _isQuickActionVisible = !_isQuickActionVisible;
+                });
+              },
+              child: Icon(_isQuickActionVisible ? Icons.close : Icons.add),
+            ),
+            floatingActionButtonLocation: CustomFabLocation(),
           ),
         );
   }

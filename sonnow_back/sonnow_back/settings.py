@@ -28,6 +28,9 @@ SECRET_KEY = 'django-insecure-dk$4&zwk)kac(c5)lph^hrrhwam3$au+7nht#7)7ad)s)&2%*+
 DEBUG = True
 CSRF_COOKIE_SECURE = False
 CSRF_TRUSTED_ORIGINS = ['http://*', 'https://*']
+DEFAULT_CHARSET = 'utf-8'
+FILE_CHARSET = 'utf-8'
+
 
 ALLOWED_HOSTS = [
     '*',
@@ -67,6 +70,13 @@ REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': (
         'rest_framework_simplejwt.authentication.JWTAuthentication',
     ),
+    'DEFAULT_RENDERER_CLASSES': (
+        'rest_framework.renderers.JSONRenderer',
+        'rest_framework.renderers.BrowsableAPIRenderer',
+    ),
+    'DEFAULT_JSON_ENCODER': 'django.core.serializers.json.DjangoJSONEncoder',
+    'UNICODE_JSON': True,
+    'COMPACT_JSON': False,
 }
 
 SIMPLE_JWT = {

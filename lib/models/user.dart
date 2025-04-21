@@ -7,7 +7,7 @@ class User {
   late String username;
   final String displayName;
   late String email;
-  final String profilePictureUrl;
+  final String? profilePictureUrl;
   final String bio;
   final Artist? highlightArtist;
   final Release? highlightRelease;
@@ -42,7 +42,7 @@ class User {
     return User(
       id: json['id']?.toString() ?? "Unknown",
       displayName: json['display_name']?.toString() ?? "Unknown",
-      profilePictureUrl: json['profile_picture']?.toString() ?? "",
+      profilePictureUrl: json['profile_picture']?.toString() ?? null,
       bio: json['bio']?.toString() ?? "",
       highlightArtist:
           json['highlighted_artist'] != null

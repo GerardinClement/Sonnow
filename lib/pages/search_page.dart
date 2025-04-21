@@ -172,98 +172,101 @@ class _SearchPageState extends State<SearchPage> {
     return Scaffold(
       appBar: AppBar(title: const Text("Home Page")),
       body: SingleChildScrollView(
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Padding(
-              padding: const EdgeInsets.all(8.0),
-              child: TextField(
-                decoration: InputDecoration(
-                  hintText: 'Search...',
-                  prefixIcon: const Icon(Icons.search),
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(8.0),
+        child: Padding(
+          padding: EdgeInsets.only(bottom: 100),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: TextField(
+                  decoration: InputDecoration(
+                    hintText: 'Search...',
+                    prefixIcon: const Icon(Icons.search),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(8.0),
+                    ),
+                  ),
+                  onChanged: (value) {
+                    _searchQuery = value;
+                    onSearchChanged(value);
+                  },
+                ),
+              ),
+              const SizedBox(height: 8),
+              Padding(
+                padding: const EdgeInsets.fromLTRB(8.0, 0, 8.0, 8.0),
+                child: Wrap(
+                  spacing: 8.0,
+                  children:
+                      _tags.map((tag) {
+                        return ChoiceChip(
+                          label: Text(tag),
+                          selected: _selectedTag == tag,
+                          onSelected: (selected) {
+                            setState(() {
+                              _selectedTag = selected ? tag : "";
+                            });
+                            onSearchChanged(_searchQuery);
+                          },
+                        );
+                      }).toList(),
+                ),
+              ),
+              if (_selectedTag == "Artist" || _selectedTag.isEmpty) ...[
+                Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: Text(
+                    "Artists",
+                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                   ),
                 ),
-                onChanged: (value) {
-                  _searchQuery = value;
-                  onSearchChanged(value);
-                },
-              ),
-            ),
-            const SizedBox(height: 8),
-            Padding(
-              padding: const EdgeInsets.fromLTRB(8.0, 0, 8.0, 8.0),
-              child: Wrap(
-                spacing: 8.0,
-                children:
-                    _tags.map((tag) {
-                      return ChoiceChip(
-                        label: Text(tag),
-                        selected: _selectedTag == tag,
-                        onSelected: (selected) {
-                          setState(() {
-                            _selectedTag = selected ? tag : "";
-                          });
-                          onSearchChanged(_searchQuery);
-                        },
-                      );
-                    }).toList(),
-              ),
-            ),
-            if (_selectedTag == "Artist" || _selectedTag.isEmpty) ...[
-              Padding(
-                padding: const EdgeInsets.all(8.0),
-                child: Text(
-                  "Artists",
-                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                ArtistListView(
+                  artists: artists,
+                  shrinkWrap: _selectedTag != "Artist",
                 ),
-              ),
-              ArtistListView(
-                artists: artists,
-                shrinkWrap: _selectedTag != "Artist",
-              ),
-            ],
-            if (_selectedTag == "Album" || _selectedTag.isEmpty) ...[
-              Padding(
-                padding: const EdgeInsets.all(8.0),
-                child: Text(
-                  "Albums",
-                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+              ],
+              if (_selectedTag == "Album" || _selectedTag.isEmpty) ...[
+                Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: Text(
+                    "Albums",
+                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                  ),
                 ),
-              ),
-              ReleaseListView(
-                releases: albums,
-                shrinkWrap: _selectedTag != "Album",
-              ),
-            ],
-            if (_selectedTag == "Track" || _selectedTag.isEmpty) ...[
-              Padding(
-                padding: const EdgeInsets.all(8.0),
-                child: Text(
-                  "Track",
-                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                ReleaseListView(
+                  releases: albums,
+                  shrinkWrap: _selectedTag != "Album",
                 ),
-              ),
-              ReleaseListView(
-                releases: releases,
-                shrinkWrap: _selectedTag != "Track",
-              ),
-            ],
-            if (_selectedTag == "User" || _selectedTag.isEmpty) ...[
-              Padding(
-                padding: const EdgeInsets.all(8.0),
-                child: Text(
-                  "Users",
-                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+              ],
+              if (_selectedTag == "Track" || _selectedTag.isEmpty) ...[
+                Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: Text(
+                    "Track",
+                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                  ),
                 ),
-              ),
-              UserProfileListView(
-                users: users,
-                shrinkWrap: _selectedTag != "User",
-              ),
+                ReleaseListView(
+                  releases: releases,
+                  shrinkWrap: _selectedTag != "Track",
+                ),
+              ],
+              if (_selectedTag == "User" || _selectedTag.isEmpty) ...[
+                Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: Text(
+                    "Users",
+                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                  ),
+                ),
+                UserProfileListView(
+                  users: users,
+                  shrinkWrap: _selectedTag != "User",
+                ),
+              ],
             ],
-          ],
+          ),
         ),
       ),
     );

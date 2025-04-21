@@ -29,7 +29,9 @@ class _EditProfilePageState extends State<EditProfilePage> {
     user = widget.user;
     displayNameController.text = user.displayName;
     bioController.text = user.bio;
-    pickedImage = XFile(user.profilePictureUrl);
+    if (user.profilePictureUrl != null) {
+      pickedImage = XFile(user.profilePictureUrl!);
+    }
   }
 
   Future<void> _pickAndUploadProfileImage() async {
@@ -77,6 +79,7 @@ class _EditProfilePageState extends State<EditProfilePage> {
   @override
   Widget build(BuildContext context) {
     Widget buildCircleAvatar() {
+
       if (isImageEdited) {
         return CircleAvatar(
           radius: 100,
@@ -85,7 +88,7 @@ class _EditProfilePageState extends State<EditProfilePage> {
       } else {
         return CircleAvatar(
           radius: 100,
-          backgroundImage: NetworkImage(user.profilePictureUrl),
+          backgroundImage: user.profilePictureUrl != null ? NetworkImage(user.profilePictureUrl!) : null,
         );
       }
     }

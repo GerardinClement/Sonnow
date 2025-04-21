@@ -15,7 +15,8 @@ class ReviewService {
     final response = await http.get(Uri.parse("$baseUrl/$releaseId/"));
 
     if (response.statusCode == 200) {
-      List<Review> reviews = (json.decode(response.body) as List)
+      final responseData = utf8.decode(response.bodyBytes);
+      List<Review> reviews = (json.decode(responseData) as List)
           .map((review) => Review.fromJson(review))
           .toList();
 
@@ -58,6 +59,40 @@ class ReviewService {
       return tags;
     } else {
       throw Exception("Error getting tags");
+    }
+  }
+
+  Future<ReviewReaction?> reactToReview(Review review, String emoji) async {
+    final header = await setRequestHeader();
+
+    final response = await http.post(
+      Uri.parse("$baseUrl/${review.id}/react/"),
+      headers: header,
+      body: jsonEncode({
+        "emoji": emoji,
+      }),
+    );
+
+    if (response.statusCode == 201) {
+      final responseData = utf8.decode(response.bodyBytes);
+      return ReviewReaction.fromJson(json.decode(responseData));
+    } else {
+      throw Exception("Error reacting to review");
+    }
+  }
+
+  Future<bool> deleteReactToReview(Review review, ReviewReaction reaction) async {
+    final header = await setRequestHeader();
+
+    final response = await http.delete(
+      Uri.parse("$baseUrl/${review.id}/react/${reaction.id}/"),
+      headers: header,
+    );
+
+    if (response.statusCode == 204) {
+      return true;
+    } else {
+      throw Exception("Error deleting reaction to review");
     }
   }
 

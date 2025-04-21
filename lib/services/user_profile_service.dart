@@ -17,6 +17,22 @@ class UserProfileService {
     final response = await http.get(Uri.parse("$baseUrl/"), headers: header);
 
     if (response.statusCode == 200) {
+      final responseData = utf8.decode(response.bodyBytes);
+      return User.fromJson(json.decode(responseData));
+    } else {
+      throw Exception("Error getting user profile");
+    }
+  }
+
+  Future<User> getUserProfile(String userId) async {
+    Map<String, String> header = await setRequestHeader();
+
+    final response = await http.get(
+      Uri.parse("$baseUrl/$userId/"),
+      headers: header,
+    );
+
+    if (response.statusCode == 200) {
       return User.fromJson(json.decode(response.body));
     } else {
       throw Exception("Error getting user profile");

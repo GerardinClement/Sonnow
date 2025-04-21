@@ -41,6 +41,8 @@ dependencies:
   flutter_rating_stars: ^1.1.0
   hive: ^2.2.3
   hive_flutter: ^1.1.0
+  flutter_reaction_button: ^3.0.0+3
+  emoji_picker_flutter: ^4.3.0
 
 dev_dependencies:
   flutter_test:
@@ -59,6 +61,14 @@ dev_dependencies:
 
 # The following section is specific to Flutter packages.
 flutter:
+  assets:
+    - assets/images/
+  fonts:
+    - family: CooperHewitt
+      fonts:
+        - asset: assets/fonts/CooperHewitt-Semibold.otf
+        - asset: assets/fonts/CooperHewitt-Bold.otf
+          weight: 700
 
   # The following line ensures that the Material Icons font is
   # included with your application, so that you can use the icons in

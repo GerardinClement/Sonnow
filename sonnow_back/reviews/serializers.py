@@ -3,9 +3,8 @@ from rest_framework import serializers
 
 from releases.models import Release
 from releases.serializers import ReleaseSerializer
-from .models import Review, Tag
+from .models import Review, Tag, ReactionReview, ReactionType
 from user_profile.models import Profile
-
 
 class SimpleProfileSerializer(serializers.ModelSerializer):
     username = serializers.CharField(source='user.username', read_only=True)
@@ -22,6 +21,25 @@ class SimpleProfileSerializer(serializers.ModelSerializer):
                 return request.build_absolute_uri(obj.profile_picture.url)
             return obj.profile_picture.url
         return None
+
+class ReactionTypeSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ReactionType
+        fields = ['id', 'name', 'emoji']
+
+class ReactionReviewSerializer(serializers.ModelSerializer):
+    user = SimpleProfileSerializer(source='user.profile', read_only=True)
+
+    class Meta:
+        model = ReactionReview
+        fields = ['id', 'user', 'review', 'emoji']
+        read_only_fields = ['user', 'review']
+
+    def create(self, validated_data):
+        validated_data['user'] = self.context['request'].user
+        return super().create(validated_data)
+
+
 
 class TagSerializer(ModelSerializer):
     class Meta:
@@ -42,11 +60,12 @@ class ReviewSerializer(ModelSerializer):
         write_only=True
     )
     user_profile = SimpleProfileSerializer(source='user.profile', read_only=True)
+    reactions = ReactionReviewSerializer(many=True, read_only=True)
 
     class Meta:
         model = Review
-        fields = ['id', 'user', 'user_profile','release', 'release_id', 'tags', 'tag_ids', 'content', 'created_at', 'updated_at']
-        read_only_fields = ['user', 'created_at', 'updated_at']
+        fields = ['id', 'user', 'user_profile','release', 'release_id', 'tags', 'tag_ids', 'content', 'created_at', 'updated_at', 'reactions']
+        read_only_fields = ['user', 'created_at', 'updated_at', 'reactions']
 
     def create(self, validated_data):
         tags = validated_data.pop('tag_ids', [])

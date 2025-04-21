@@ -7,6 +7,8 @@ import 'package:sonnow/services/user_profile_service.dart';
 import 'package:sonnow/views/release_card_view.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:sonnow/services/user_library_service.dart';
+import 'package:sonnow/widgets/custom_fab_location.dart';
+import 'package:sonnow/widgets/quick_actions_widget.dart';
 
 class ArtistPage extends StatefulWidget {
   final Artist artist;
@@ -24,6 +26,7 @@ class _ArtistPageState extends State<ArtistPage> {
   late Artist artist;
   late bool isLoading;
   late bool isHighlighted = false;
+  bool _isQuickActionVisible = false;
   late String _errorMessage = "";
 
   @override
@@ -84,49 +87,73 @@ class _ArtistPageState extends State<ArtistPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: Text("Artist Page"),
-        actions: [
-          IconButton(
-            onPressed: () {
-              toggleLike();
-            },
-            icon: Icon(artist.isLiked ? Icons.favorite : Icons.favorite_border),
+      extendBodyBehindAppBar: true,
+      appBar: PreferredSize(
+        preferredSize: Size.fromHeight(kToolbarHeight),
+        child: Container(
+          decoration: const BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.topCenter,
+              end: Alignment.bottomCenter,
+              colors: [
+                Color.fromRGBO(171, 171, 171, 0.3),
+                Color.fromRGBO(171, 171, 171, 0.3),
+                Color.fromRGBO(171, 171, 171, 0.2),
+                Color.fromRGBO(171, 171, 171, 0.1),
+                Color.fromRGBO(171, 171, 171, 0.0),
+              ],
+            ),
           ),
-          IconButton(
-            onPressed: () {
-              addHighlightedArtists();
-            },
-            icon: Icon(isHighlighted? Icons.star : Icons.star_border),
+          child: AppBar(
+            backgroundColor: Colors.transparent,
+            elevation: 0,
+            leading: IconButton(
+              icon: const Icon(Icons.arrow_back, color: Colors.white),
+              onPressed: () => Navigator.pop(context),
+            ),
           ),
-        ],
+        ),
       ),
-      body:
+      body: Stack(
+        children: [
           isLoading
               ? Center(child: CircularProgressIndicator())
               : SingleChildScrollView(
-                child: Padding(
+            physics: AlwaysScrollableScrollPhysics(),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // Image sans padding et pleine largeur
+                ClipRRect(
+                  child: CachedNetworkImage(
+                    imageUrl: artist.imageUrl,
+                    width: MediaQuery
+                        .of(context)
+                        .size
+                        .width,
+                    height: 250,
+                    fit: BoxFit.cover,
+                    placeholder: (context, url) =>
+                        SizedBox(width: MediaQuery
+                            .of(context)
+                            .size
+                            .width, height: 200),
+                    errorWidget: (context, error, stackTrace) {
+                      return SizedBox(width: MediaQuery
+                          .of(context)
+                          .size
+                          .width, height: 200);
+                    },
+                  ),
+                ),
+                Padding(
                   padding: const EdgeInsets.all(16.0),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      ClipRRect(
-                        borderRadius: BorderRadius.circular(100),
-                        child: CachedNetworkImage(
-                          imageUrl: artist.imageUrl,
-                          width: 200,
-                          height: 200,
-                          fit: BoxFit.cover,
-                          placeholder:
-                              (context, url) =>
-                                  SizedBox(width: 200, height: 200),
-                          errorWidget: (context, error, stackTrace) {
-                            return SizedBox(width: 200, height: 200);
-                          },
-                        ),
-                      ),
                       SizedBox(height: 20),
-                      Text(artist.name, style: TextStyle(fontSize: 18)),
+                      Text(artist.name, style: TextStyle(
+                          fontSize: 32, fontWeight: FontWeight.bold)),
                       Row(
                         children: [
                           Padding(
@@ -141,9 +168,10 @@ class _ArtistPageState extends State<ArtistPage> {
                             onPressed: () {
                               Navigator.of(context).push(
                                 MaterialPageRoute(
-                                  builder: (context) => ListReleasesPage(
-                                    releases: artist.releases,
-                                  ),
+                                  builder: (context) =>
+                                      ListReleasesPage(
+                                        releases: artist.releases,
+                                      ),
                                 ),
                               );
                             },
@@ -156,58 +184,84 @@ class _ArtistPageState extends State<ArtistPage> {
                         child: Text("Album", style: TextStyle(fontSize: 16)),
                       ),
                       SizedBox(
-                        height: 150,
-                        child:
-                            artist.releaseByType.isEmpty
-                                ? const Center(child: Text("No result"))
-                                : ListView.builder(
-                                  scrollDirection: Axis.horizontal,
-                                  itemCount:
-                                      artist.releaseByType['Album']!.length > 15
-                                          ? 15
-                                          : artist
-                                              .releaseByType['Album']!
-                                              .length,
-                                  itemBuilder: (context, index) {
-                                    return ReleaseCard(
-                                      release:
-                                          artist.releaseByType['Album']![index],
-                                    );
-                                  },
-                                ),
+                        height: 175,
+                        child: artist.releaseByType.isEmpty
+                            ? const Center(child: Text("No result"))
+                            : ListView.builder(
+                          scrollDirection: Axis.horizontal,
+                          itemCount: artist.releaseByType['Album']!.length > 15
+                              ? 15
+                              : artist.releaseByType['Album']!.length,
+                          itemBuilder: (context, index) {
+                            return ReleaseCard(
+                              release: artist.releaseByType['Album']![index],
+                            );
+                          },
+                        ),
                       ),
-                      SizedBox(height: 8),
                       Padding(
                         padding: EdgeInsets.symmetric(vertical: 16),
                         child: Text("Single", style: TextStyle(fontSize: 16)),
                       ),
                       SizedBox(
-                        height: 150,
-                        child:
-                            artist.releaseByType.isEmpty
-                                ? const Center(child: Text("No result"))
-                                : ListView.builder(
-                                  scrollDirection: Axis.horizontal,
-                                  itemCount:
-                                      artist.releaseByType['Single']!.length >
-                                              15
-                                          ? 15
-                                          : artist
-                                              .releaseByType['Single']!
-                                              .length,
-                                  itemBuilder: (context, index) {
-                                    return ReleaseCard(
-                                      release:
-                                          artist
-                                              .releaseByType['Single']![index],
-                                    );
-                                  },
-                                ),
+                        height: 175,
+                        child: artist.releaseByType.isEmpty
+                            ? const Center(child: Text("No result"))
+                            : ListView.builder(
+                          scrollDirection: Axis.horizontal,
+                          itemCount: artist.releaseByType['Single']!.length > 15
+                              ? 15
+                              : artist.releaseByType['Single']!.length,
+                          itemBuilder: (context, index) {
+                            return ReleaseCard(
+                              release: artist.releaseByType['Single']![index],
+                            );
+                          },
+                        ),
                       ),
                     ],
                   ),
                 ),
+              ],
+            ),
+          ),
+          if (_isQuickActionVisible)
+            Positioned(
+              right: 30,
+              bottom: 100,
+              child: Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: Theme
+                      .of(context)
+                      .cardColor,
+                  borderRadius: BorderRadius.circular(16),
+                  boxShadow: [
+                    BoxShadow(color: Colors.black26, blurRadius: 10),
+                  ],
+                ),
+                child: QuickActions(
+                  onLike: toggleLike,
+                  onAddToListen: null,
+                  onAddHighlight: addHighlightedArtists,
+                  openReviewForm: null,
+                  isLiked: artist.isLiked,
+                  isToListen: null,
+                  isHighlighted: artist.isHighlighted,
+                ),
               ),
+            ),
+        ],
+      ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: () {
+          setState(() {
+            _isQuickActionVisible = !_isQuickActionVisible;
+          });
+        },
+        child: Icon(_isQuickActionVisible ? Icons.close : Icons.add),
+      ),
+      floatingActionButtonLocation: CustomFabLocation(),
     );
   }
 }

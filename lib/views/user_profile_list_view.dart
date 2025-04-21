@@ -22,7 +22,6 @@ class UserProfileListView extends StatelessWidget {
       );
     }
 
-    // Lorsqu'utilisé comme composant dans une autre vue
     return _buildUsersList();
   }
 
@@ -39,7 +38,7 @@ class UserProfileListView extends StatelessWidget {
             final user = users[index];
             return ListTile(
               leading: CircleAvatar(
-                backgroundImage: NetworkImage(user.profilePictureUrl),
+                backgroundImage: user.profilePictureUrl != null ?NetworkImage(user.profilePictureUrl!): const AssetImage('assets/images/default_profile.png'),
               ),
               title: Text(user.displayName),
               onTap: () {

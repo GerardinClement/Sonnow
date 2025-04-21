@@ -44,7 +44,7 @@ class Artist {
       name: json['name']?.toString() ?? "Unknown",
       id: json['id']?.toString() ?? "Unknown",
       tag: json['disambiguation']?.toString() ?? "Unknown",
-      imageUrl: json['picture_medium']?.toString() ?? json['image_url']?.toString() ?? "",
+      imageUrl: json['picture_big']?.toString() ?? json['image_url']?.toString() ?? "",
     );
   }
 }

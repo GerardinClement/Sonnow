@@ -82,19 +82,20 @@ class _ManageAccountPageState extends State<ManageAccountPage> {
   }
 
   void _deleteAccount() {
-    showDialog(context: context,
-        builder: (context) {
-          return DeleteAccountDialog(
-            onSuccessDelete: () async {
-              await authService.logout(context, () {
-                Navigator.of(context, rootNavigator: true).pushAndRemoveUntil(
-                  MaterialPageRoute(builder: (context) => const App()),
-                      (route) => false,
-                );
-              });
-            },
-          );
-        });
+    showDialog(
+      context: context,
+      builder: (context) {
+        return DeleteAccountDialog(
+          onSuccessDelete: () async {
+            await authService.logout();
+            Navigator.of(context, rootNavigator: true).pushAndRemoveUntil(
+              MaterialPageRoute(builder: (context) => const App()),
+              (route) => false,
+            );
+          },
+        );
+      },
+    );
   }
 
   @override

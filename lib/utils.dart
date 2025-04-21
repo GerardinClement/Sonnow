@@ -1,6 +1,8 @@
 import 'package:sonnow/services/auth_service.dart';
 import 'package:sonnow/models/artist.dart';
 import 'package:sonnow/models/release.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+
 
 final AuthService authService = AuthService();
 
@@ -54,4 +56,16 @@ List<Release> sortReleases(List<Release> releases, String query) {
   });
 
   return releases;
+}
+
+Future<String?> getCurrentUserId() async {
+  final SharedPreferences prefs = await SharedPreferences.getInstance();
+  final String? currentUserId = prefs.getString("userId");
+  return currentUserId;
+}
+
+Future<bool> isCurrentUser(String profileId) async {
+  final SharedPreferences prefs = await SharedPreferences.getInstance();
+  final String? currentUserId = prefs.getString("userId");
+  return currentUserId != null && currentUserId == profileId;
 }

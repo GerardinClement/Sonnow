@@ -77,14 +77,13 @@ class AuthService {
     }
   }
 
-  Future<void> logout(BuildContext context, Function onLogout) async {
+  Future<void> logout() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
 
     await prefs.remove("access_token");
     await prefs.remove("refresh_token");
+    await prefs.remove("userId");
     await clearAllBoxes();
-
-    onLogout();
   }
 
   Future saveAuthToken(data) async {
