@@ -33,7 +33,8 @@ class UserProfileService {
     );
 
     if (response.statusCode == 200) {
-      return User.fromJson(json.decode(response.body));
+      final responseData = utf8.decode(response.bodyBytes);
+      return User.fromJson(json.decode(responseData));
     } else {
       throw Exception("Error getting user profile");
     }
