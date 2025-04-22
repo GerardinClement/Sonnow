@@ -5,6 +5,7 @@ import 'package:sonnow/services/deezer_api.dart';
 import 'package:sonnow/services/user_library_storage.dart';
 import 'package:sonnow/services/user_profile_service.dart';
 import 'package:sonnow/views/release_card_view.dart';
+import 'package:sonnow/views/artist_card_view.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:sonnow/services/user_library_service.dart';
 import 'package:sonnow/widgets/custom_fab_location.dart';
@@ -45,6 +46,8 @@ class _ArtistPageState extends State<ArtistPage> {
         artist.releases = await DeezerApi.getArtistAlbums(artist);
         artist.setReleasesByType(artist.releases);
         isHighlighted = await getIfArtistIsHighlighted(artist.id);
+        List<Artist> relatedArtists = await DeezerApi.getRelatedArtists(artist);
+        artist.setRelatedArtists(relatedArtists);
       }
       if (mounted) {
         setState(() {
@@ -96,7 +99,7 @@ class _ArtistPageState extends State<ArtistPage> {
               begin: Alignment.topCenter,
               end: Alignment.bottomCenter,
               colors: [
-                Color.fromRGBO(171, 171, 171, 0.3),
+                Color.fromRGBO(171, 171, 171, 0.5),
                 Color.fromRGBO(171, 171, 171, 0.3),
                 Color.fromRGBO(171, 171, 171, 0.2),
                 Color.fromRGBO(171, 171, 171, 0.1),
@@ -215,6 +218,26 @@ class _ArtistPageState extends State<ArtistPage> {
                           itemBuilder: (context, index) {
                             return ReleaseCard(
                               release: artist.releaseByType['Single']![index],
+                            );
+                          },
+                        ),
+                      ),
+                      Padding(
+                        padding: EdgeInsets.symmetric(vertical: 16),
+                        child: Text("Related Artists", style: TextStyle(fontSize: 16)),
+                      ),
+                      SizedBox(
+                        height: 175,
+                        child: artist.relatedArtists.isEmpty
+                            ? const Center(child: Text("No result"))
+                            : ListView.builder(
+                          scrollDirection: Axis.horizontal,
+                          itemCount: artist.relatedArtists.length > 15
+                              ? 15
+                              : artist.relatedArtists.length,
+                          itemBuilder: (context, index) {
+                            return ArtistCard(
+                              artist: artist.relatedArtists[index],
                             );
                           },
                         ),

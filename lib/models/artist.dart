@@ -9,6 +9,7 @@ class Artist {
   List<Release> releases = [];
   bool isLiked = false;
   bool isHighlighted = false;
+  List<Artist> relatedArtists = [];
 
   Artist({
     required this.name,
@@ -24,6 +25,10 @@ class Artist {
   void setReleases(List<Release> releases) {
     this.releases = releases;
     setReleasesByType(releases);
+  }
+
+  void setRelatedArtists(List<Artist> artists) {
+    relatedArtists = artists;
   }
 
   void setReleasesByType(List<Release> releases) {
