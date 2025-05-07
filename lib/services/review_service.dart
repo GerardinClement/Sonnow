@@ -5,14 +5,15 @@ import 'package:sonnow/models/release.dart';
 import 'package:sonnow/services/auth_service.dart';
 import 'package:sonnow/services/user_library_service.dart';
 import 'package:sonnow/utils.dart';
+import 'package:sonnow/globals.dart';
 
 class ReviewService {
   final AuthService authService = AuthService();
   final UserLibraryService userLibraryService = UserLibraryService();
-  final String baseUrl = "http://10.0.2.2:8000/review";
+  String url = "$baseUrl/review";
 
   Future<List<Review>> getReviews(String releaseId) async {
-    final response = await http.get(Uri.parse("$baseUrl/$releaseId/"));
+    final response = await http.get(Uri.parse("$url/$releaseId/"));
 
     if (response.statusCode == 200) {
       final responseData = utf8.decode(response.bodyBytes);
@@ -31,7 +32,7 @@ class ReviewService {
 
     await userLibraryService.getOrCreateRelease(release);
     final response = await http.post(
-      Uri.parse("$baseUrl/"),
+      Uri.parse("$url/"),
       headers: header,
       body: jsonEncode({
         "content": content,
@@ -48,7 +49,7 @@ class ReviewService {
   }
 
   Future<Map<int, String>> getAllTags() async {
-    final response = await http.get(Uri.parse("$baseUrl/tags/"));
+    final response = await http.get(Uri.parse("$url/tags/"));
 
     if (response.statusCode == 200) {
       Map<int, String> tags = {};
@@ -66,7 +67,7 @@ class ReviewService {
     final header = await setRequestHeader();
 
     final response = await http.post(
-      Uri.parse("$baseUrl/${review.id}/react/"),
+      Uri.parse("$url/${review.id}/react/"),
       headers: header,
       body: jsonEncode({
         "emoji": emoji,
@@ -85,7 +86,7 @@ class ReviewService {
     final header = await setRequestHeader();
 
     final response = await http.delete(
-      Uri.parse("$baseUrl/${review.id}/react/${reaction.id}/"),
+      Uri.parse("$url/${review.id}/react/${reaction.id}/"),
       headers: header,
     );
 
@@ -93,6 +94,21 @@ class ReviewService {
       return true;
     } else {
       throw Exception("Error deleting reaction to review");
+    }
+  }
+
+  Future<List<Review>> fetchMostPopularReviews() async {
+    final response = await http.get(Uri.parse("$url/most-popular/"));
+
+    if (response.statusCode == 200) {
+      final responseData = utf8.decode(response.bodyBytes);
+      List<Review> reviews = (json.decode(responseData) as List)
+          .map((review) => Review.fromJson(review))
+          .toList();
+
+      return reviews;
+    } else {
+      throw Exception("Error getting most popular reviews");
     }
   }
 

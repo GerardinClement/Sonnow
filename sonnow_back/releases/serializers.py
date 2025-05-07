@@ -3,6 +3,7 @@ from artists.serializers import ArtistSerializer
 from .models import Release
 from artists.models import Artist
 
+
 class ReleaseSerializer(serializers.ModelSerializer):
     artist = ArtistSerializer(read_only=True)
     artist_id = serializers.IntegerField(write_only=True, required=False)
@@ -17,6 +18,7 @@ class ReleaseSerializer(serializers.ModelSerializer):
             'release_date',
             'image_url',
             'type',
+            'nb_like',
         ]
         read_only_fields = ['artist']
 
@@ -28,3 +30,7 @@ class ReleaseSerializer(serializers.ModelSerializer):
             except Artist.DoesNotExist:
                 raise serializers.ValidationError("Artist with this ID does not exist.")
         return super().create(validated_data)
+
+    def get_reviews_basic(self, obj):
+        from reviews.models import Review
+        return Review.objects.filter(release=obj).values('id', 'content')

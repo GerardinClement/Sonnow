@@ -6,15 +6,19 @@ import 'dart:convert';
 import 'package:sonnow/utils.dart';
 import 'package:sonnow/models/artist.dart';
 import 'package:sonnow/models/release.dart';
+import 'package:sonnow/models/review.dart';
+import 'package:sonnow/models/like_artist.dart';
+import 'package:sonnow/models/like_release.dart';
+import 'package:sonnow/globals.dart';
 
 class UserProfileService {
-  final String baseUrl = "http://10.0.2.2:8000/profile";
+  String url = "$baseUrl/profile";
   final UserLibraryService userLibraryService = UserLibraryService();
 
   Future<User> fetchUserProfile() async {
     Map<String, String> header = await setRequestHeader();
 
-    final response = await http.get(Uri.parse("$baseUrl/"), headers: header);
+    final response = await http.get(Uri.parse("$url/"), headers: header);
 
     if (response.statusCode == 200) {
       final responseData = utf8.decode(response.bodyBytes);
@@ -28,7 +32,7 @@ class UserProfileService {
     Map<String, String> header = await setRequestHeader();
 
     final response = await http.get(
-      Uri.parse("$baseUrl/$userId/"),
+      Uri.parse("$url/$userId/"),
       headers: header,
     );
 
@@ -44,7 +48,7 @@ class UserProfileService {
     Map<String, String> header = await setRequestHeader();
 
     final response = await http.get(
-      Uri.parse("$baseUrl/search/?q=$query"),
+      Uri.parse("$url/search/?q=$query"),
       headers: header,
     );
 
@@ -60,7 +64,7 @@ class UserProfileService {
     Map<String, String> header = await setRequestHeader();
 
     final response = await http.post(
-      Uri.parse("$baseUrl/follow/${user.id}/"),
+      Uri.parse("$url/follow/${user.id}/"),
       headers: header,
     );
 
@@ -73,7 +77,7 @@ class UserProfileService {
     Map<String, String> header = await setRequestHeader();
 
     final response = await http.delete(
-      Uri.parse("$baseUrl/unfollow/${user.id}/"),
+      Uri.parse("$url/unfollow/${user.id}/"),
       headers: header,
     );
 
@@ -87,7 +91,7 @@ class UserProfileService {
 
     final request = http.MultipartRequest(
       'PUT',
-      Uri.parse("$baseUrl/"),
+      Uri.parse("$url/"),
     );
 
     request.headers.addAll(header);
@@ -116,7 +120,7 @@ class UserProfileService {
     await userLibraryService.getOrCreateArtist(artist);
     final request = http.MultipartRequest(
       'PUT',
-      Uri.parse("$baseUrl/"),
+      Uri.parse("$url/"),
     );
 
     request.headers.addAll(header);
@@ -136,7 +140,7 @@ class UserProfileService {
     await userLibraryService.getOrCreateRelease(release);
     final request = http.MultipartRequest(
       'PUT',
-      Uri.parse("$baseUrl/"),
+      Uri.parse("$url/"),
     );
 
     request.headers.addAll(header);
@@ -147,6 +151,58 @@ class UserProfileService {
       await addHighlightReleaseInBox(release);
     } else {
       throw Exception("Error setting highlighted release");
+    }
+  }
+
+  Future<List<Review>>  getFollowedReviews() async {
+    Map<String, String> header = await setRequestHeader();
+
+    final response = await http.get(
+      Uri.parse("$url/followed-reviews/"),
+      headers: header,
+    );
+
+    if (response.statusCode == 200) {
+      final responseData = utf8.decode(response.bodyBytes);
+      final responseList = json.decode(responseData) as List;
+      return responseList.map((json) => Review.fromJson(json)).toList();
+    } else {
+      throw Exception("Error getting followers reviews");
+    }
+  }
+
+  Future<List<LikeRelease>> getFollowedLikedReleases() async {
+    Map<String, String> header = await setRequestHeader();
+
+    final response = await http.get(
+      Uri.parse("$url/followed-liked-releases/"),
+      headers: header,
+    );
+
+    if (response.statusCode == 200) {
+      final responseData = utf8.decode(response.bodyBytes);
+      final responseList = json.decode(responseData) as List;
+      return responseList.map((json) => LikeRelease.fromJson(json)).toList();
+    } else {
+      throw Exception("Error getting followers liked releases");
+    }
+  }
+
+  Future<List<LikeArtist>> getFollowedLikedArtists() async {
+    Map<String, String> header = await setRequestHeader();
+
+    final response = await http.get(
+      Uri.parse("$url/followed-liked-artists/"),
+      headers: header,
+    );
+
+    if (response.statusCode == 200) {
+      final responseData = utf8.decode(response.bodyBytes);
+      final responseList = json.decode(responseData) as List;
+      if (responseList.isEmpty) return [];
+      return responseList.map((json) => LikeArtist.fromJson(json)).toList();
+    } else {
+      throw Exception("Error getting followers liked artists");
     }
   }
 }

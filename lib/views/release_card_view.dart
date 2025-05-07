@@ -5,8 +5,15 @@ import 'package:cached_network_image/cached_network_image.dart';
 
 class ReleaseCard extends StatelessWidget {
   final Release release;
+  final double? width;
+  final double? height;
 
-  const ReleaseCard({super.key, required this.release});
+  const ReleaseCard({
+    super.key,
+    required this.release,
+    this.width,
+    this.height,
+  });
 
   void onTap(context) {
     Navigator.push(
@@ -27,18 +34,19 @@ class ReleaseCard extends StatelessWidget {
               borderRadius: BorderRadius.circular(8),
               child: CachedNetworkImage(
                 imageUrl: release.imageUrl,
-                width: 100,
-                height: 100,
+                width: width ?? 100,
+                height: height ?? 100,
                 fit: BoxFit.cover,
-                placeholder: (context, url) => const SizedBox(width: 100, height: 100),
+                placeholder:
+                    (context, url) => const SizedBox(width: 100, height: 100),
                 errorWidget: (context, error, stackTrace) {
-                  return const SizedBox(width: 100, height: 100);
+                  return SizedBox(width: width ?? 100, height: height ?? 100);
                 },
               ),
             ),
             SizedBox(height: 8),
             SizedBox(
-              width: 100,
+              width: width ?? 100,
               child: Text(
                 release.title,
                 maxLines: 2,

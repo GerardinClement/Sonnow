@@ -38,8 +38,8 @@ class AppColors {
     },
   );
   static const Color primary = Color(0xFF4D5061);
-  static const Color secondary = Color(0xFFE7E247);
-  static const Color background = Color(0xFFE9EDDE);
+  static const Color secondary = Color(0xFFF8E16C);
+  static const Color background = Color(0xFF0B090A);
   static const Color text = Color(0xFF3D3B30);
 
 }

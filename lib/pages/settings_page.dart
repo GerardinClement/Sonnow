@@ -24,10 +24,17 @@ class _SettingsPageState extends State<SettingsPage> {
 
       if (!mounted) return;
 
-      Navigator.of(context).popUntil((route) => route.isFirst);
-      Navigator.of(context).pushReplacement(
-        MaterialPageRoute(builder: (context) => const App()),
-      );
+      // Accéder à l'état global de App et changer directement son état
+      final appState = context.findAncestorStateOfType<AppState>();
+      if (appState != null) {
+        appState.setLoggedOut();
+      } else {
+        // Fallback si appState n'est pas trouvé
+        Navigator.of(context, rootNavigator: true).pushAndRemoveUntil(
+          MaterialPageRoute(builder: (context) => const App()),
+              (route) => false,
+        );
+      }
     } catch (e) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(

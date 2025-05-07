@@ -10,6 +10,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:sonnow/services/user_library_service.dart';
 import 'package:sonnow/widgets/custom_fab_location.dart';
 import 'package:sonnow/widgets/quick_actions_widget.dart';
+import 'package:sonnow/widgets/like_animation_widget.dart';
 
 class ArtistPage extends StatefulWidget {
   final Artist artist;
@@ -122,132 +123,177 @@ class _ArtistPageState extends State<ArtistPage> {
           isLoading
               ? Center(child: CircularProgressIndicator())
               : SingleChildScrollView(
-            physics: AlwaysScrollableScrollPhysics(),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                // Image sans padding et pleine largeur
-                ClipRRect(
-                  child: CachedNetworkImage(
-                    imageUrl: artist.imageUrl,
-                    width: MediaQuery
-                        .of(context)
-                        .size
-                        .width,
-                    height: 250,
-                    fit: BoxFit.cover,
-                    placeholder: (context, url) =>
-                        SizedBox(width: MediaQuery
-                            .of(context)
-                            .size
-                            .width, height: 200),
-                    errorWidget: (context, error, stackTrace) {
-                      return SizedBox(width: MediaQuery
-                          .of(context)
-                          .size
-                          .width, height: 200);
-                    },
-                  ),
-                ),
-                Padding(
-                  padding: const EdgeInsets.all(16.0),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      SizedBox(height: 20),
-                      Text(artist.name, style: TextStyle(
-                          fontSize: 32, fontWeight: FontWeight.bold)),
-                      Row(
+                physics: AlwaysScrollableScrollPhysics(),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // Image sans padding et pleine largeur
+                    ClipRRect(
+                      child: CachedNetworkImage(
+                        imageUrl: artist.imageUrl,
+                        width: MediaQuery.of(context).size.width,
+                        height: 300,
+                        fit: BoxFit.cover,
+                        placeholder:
+                            (context, url) => SizedBox(
+                              width: MediaQuery.of(context).size.width,
+                              height: 200,
+                            ),
+                        errorWidget: (context, error, stackTrace) {
+                          return SizedBox(
+                            width: MediaQuery.of(context).size.width,
+                            height: 200,
+                          );
+                        },
+                      ),
+                    ),
+                    Padding(
+                      padding: const EdgeInsets.all(16.0),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
+                          Row(
+                            children: [
+                              Text(
+                                artist.name,
+                                style: TextStyle(
+                                  fontSize: 32,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                              Spacer(),
+                              GestureDetector(
+                                onTap: () {
+                                  toggleLike();
+                                },
+                                child: LikeIconAnimated(
+                                  isLiked: artist.isLiked,
+                                ),
+                              ),
+                            ],
+                          ),
+                          Row(
+                            children: [
+                              Padding(
+                                padding: EdgeInsets.symmetric(vertical: 8),
+                                child: Text(
+                                  "Discography",
+                                  style: TextStyle(fontSize: 20),
+                                ),
+                              ),
+                              Spacer(),
+                              ElevatedButton(
+                                onPressed: () {
+                                  Navigator.of(context).push(
+                                    MaterialPageRoute(
+                                      builder:
+                                          (context) => ListReleasesPage(
+                                            releases: artist.releases,
+                                          ),
+                                    ),
+                                  );
+                                },
+                                child: Text("See all"),
+                              ),
+                            ],
+                          ),
                           Padding(
                             padding: EdgeInsets.symmetric(vertical: 8),
                             child: Text(
-                              "Discography",
-                              style: TextStyle(fontSize: 20),
+                              "Album",
+                              style: TextStyle(fontSize: 16),
                             ),
                           ),
-                          Spacer(),
-                          ElevatedButton(
-                            onPressed: () {
-                              Navigator.of(context).push(
-                                MaterialPageRoute(
-                                  builder: (context) =>
-                                      ListReleasesPage(
-                                        releases: artist.releases,
-                                      ),
-                                ),
-                              );
-                            },
-                            child: Text("See all"),
+                          SizedBox(
+                            height: 220,
+                            child:
+                                artist.releaseByType.isEmpty
+                                    ? const Center(child: Text("No result"))
+                                    : ListView.builder(
+                                      scrollDirection: Axis.horizontal,
+                                      itemCount:
+                                          artist
+                                                      .releaseByType['Album']!
+                                                      .length >
+                                                  15
+                                              ? 15
+                                              : artist
+                                                  .releaseByType['Album']!
+                                                  .length,
+                                      itemBuilder: (context, index) {
+                                        return ReleaseCard(
+                                          width: 150,
+                                          height: 150,
+                                          release:
+                                              artist
+                                                  .releaseByType['Album']![index],
+                                        );
+                                      },
+                                    ),
+                          ),
+                          Padding(
+                            padding: EdgeInsets.symmetric(vertical: 16),
+                            child: Text(
+                              "Single",
+                              style: TextStyle(fontSize: 16),
+                            ),
+                          ),
+                          SizedBox(
+                            height: 220,
+                            child:
+                                artist.releaseByType.isEmpty
+                                    ? const Center(child: Text("No result"))
+                                    : ListView.builder(
+                                      scrollDirection: Axis.horizontal,
+                                      itemCount:
+                                          artist
+                                                      .releaseByType['Single']!
+                                                      .length >
+                                                  15
+                                              ? 15
+                                              : artist
+                                                  .releaseByType['Single']!
+                                                  .length,
+                                      itemBuilder: (context, index) {
+                                        return ReleaseCard(
+                                          release:
+                                              artist
+                                                  .releaseByType['Single']![index],
+                                        );
+                                      },
+                                    ),
+                          ),
+                          Padding(
+                            padding: EdgeInsets.symmetric(vertical: 16),
+                            child: Text(
+                              "Related Artists",
+                              style: TextStyle(fontSize: 16),
+                            ),
+                          ),
+                          SizedBox(
+                            height: 175,
+                            child:
+                                artist.relatedArtists.isEmpty
+                                    ? const Center(child: Text("No result"))
+                                    : ListView.builder(
+                                      scrollDirection: Axis.horizontal,
+                                      itemCount:
+                                          artist.relatedArtists.length > 15
+                                              ? 15
+                                              : artist.relatedArtists.length,
+                                      itemBuilder: (context, index) {
+                                        return ArtistCard(
+                                          artist: artist.relatedArtists[index],
+                                        );
+                                      },
+                                    ),
                           ),
                         ],
                       ),
-                      Padding(
-                        padding: EdgeInsets.symmetric(vertical: 8),
-                        child: Text("Album", style: TextStyle(fontSize: 16)),
-                      ),
-                      SizedBox(
-                        height: 175,
-                        child: artist.releaseByType.isEmpty
-                            ? const Center(child: Text("No result"))
-                            : ListView.builder(
-                          scrollDirection: Axis.horizontal,
-                          itemCount: artist.releaseByType['Album']!.length > 15
-                              ? 15
-                              : artist.releaseByType['Album']!.length,
-                          itemBuilder: (context, index) {
-                            return ReleaseCard(
-                              release: artist.releaseByType['Album']![index],
-                            );
-                          },
-                        ),
-                      ),
-                      Padding(
-                        padding: EdgeInsets.symmetric(vertical: 16),
-                        child: Text("Single", style: TextStyle(fontSize: 16)),
-                      ),
-                      SizedBox(
-                        height: 175,
-                        child: artist.releaseByType.isEmpty
-                            ? const Center(child: Text("No result"))
-                            : ListView.builder(
-                          scrollDirection: Axis.horizontal,
-                          itemCount: artist.releaseByType['Single']!.length > 15
-                              ? 15
-                              : artist.releaseByType['Single']!.length,
-                          itemBuilder: (context, index) {
-                            return ReleaseCard(
-                              release: artist.releaseByType['Single']![index],
-                            );
-                          },
-                        ),
-                      ),
-                      Padding(
-                        padding: EdgeInsets.symmetric(vertical: 16),
-                        child: Text("Related Artists", style: TextStyle(fontSize: 16)),
-                      ),
-                      SizedBox(
-                        height: 175,
-                        child: artist.relatedArtists.isEmpty
-                            ? const Center(child: Text("No result"))
-                            : ListView.builder(
-                          scrollDirection: Axis.horizontal,
-                          itemCount: artist.relatedArtists.length > 15
-                              ? 15
-                              : artist.relatedArtists.length,
-                          itemBuilder: (context, index) {
-                            return ArtistCard(
-                              artist: artist.relatedArtists[index],
-                            );
-                          },
-                        ),
-                      ),
-                    ],
-                  ),
+                    ),
+                  ],
                 ),
-              ],
-            ),
-          ),
+              ),
           if (_isQuickActionVisible)
             Positioned(
               right: 30,
@@ -255,13 +301,9 @@ class _ArtistPageState extends State<ArtistPage> {
               child: Container(
                 padding: const EdgeInsets.all(8),
                 decoration: BoxDecoration(
-                  color: Theme
-                      .of(context)
-                      .cardColor,
+                  color: Theme.of(context).cardColor,
                   borderRadius: BorderRadius.circular(16),
-                  boxShadow: [
-                    BoxShadow(color: Colors.black26, blurRadius: 10),
-                  ],
+                  boxShadow: [BoxShadow(color: Colors.black26, blurRadius: 10)],
                 ),
                 child: QuickActions(
                   onLike: toggleLike,

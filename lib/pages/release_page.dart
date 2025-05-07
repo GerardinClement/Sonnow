@@ -8,12 +8,14 @@ import 'package:sonnow/services/review_service.dart';
 import 'package:sonnow/services/user_library_service.dart';
 import 'package:sonnow/services/user_library_storage.dart';
 import 'package:sonnow/services/user_profile_service.dart';
+import 'package:sonnow/services/sonnow_service.dart';
 import 'package:sonnow/pages/artist_page.dart';
 import 'package:sonnow/pages/profile_page.dart';
 import 'package:sonnow/views/review_list_view.dart';
 import 'package:sonnow/views/contributors_list_view.dart';
 import 'package:sonnow/widgets/custom_fab_location.dart';
 import 'package:sonnow/widgets/quick_actions_widget.dart';
+import 'package:sonnow/widgets/like_animation_widget.dart';
 
 class ReleasePage extends StatefulWidget {
   final Release release;
@@ -64,12 +66,14 @@ class _ReleasePageState extends State<ReleasePage> {
         getIfReleaseIsHighlighted(releaseId),
         getIfReleaseIsLiked(releaseId),
         getIfReleaseIsToListen(releaseId),
+        SonnowService.getReleaseNumberOfLikes(releaseId),
       ]).then((List<dynamic> results) async {
         Release res = results[0];
         res.setTracklist(results[1]);
         res.isHighlighted = results[2];
         res.isLiked = results[3];
         res.toListen = results[4];
+        res.nb_likes = results[5];
 
         setState(() {
           release = res;
@@ -97,9 +101,13 @@ class _ReleasePageState extends State<ReleasePage> {
       if (release.isLiked) {
         await userLibraryService.unlikeRelease(release);
         removeLikedReleasesFromBox(release.id);
+        release.nb_likes -= 1;
       } else {
         await userLibraryService.likeRelease(release);
         addLikedReleasesInBox([release]);
+        setState(() {
+          release.nb_likes += 1;
+        });
       }
 
       setState(() {
@@ -450,35 +458,106 @@ class _ReleasePageState extends State<ReleasePage> {
                       const SizedBox(height: 20),
                       Padding(
                         padding: const EdgeInsets.symmetric(horizontal: 16),
-                        child: Column(
+                        child: Row(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Text(
-                              release.title,
-                              style: const TextStyle(
-                                fontSize: 32,
-                                fontWeight: FontWeight.bold,
-                                fontFamily: "CooperHewitt",
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    release.title,
+                                    style: const TextStyle(
+                                      fontSize: 32,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                    maxLines: 2,
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                  release.contributors.isNotEmpty
+                                      ? ContributorsList(
+                                        contributors: release.contributors,
+                                      )
+                                      : ContributorsList(
+                                        contributors: [release.artist],
+                                      ),
+                                  Text(
+                                    release.date,
+                                    style: const TextStyle(
+                                      fontSize: 12,
+                                      fontWeight: FontWeight.w300,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 8),
+                                ],
                               ),
                             ),
-                            release.contributors.isNotEmpty
-                                ? ContributorsList(
-                                  contributors: release.contributors,
-                                )
-                                : ContributorsList(
-                                  contributors: [release.artist],
+                            const SizedBox(width: 16),
+                            ClipRect(
+                              child: Container(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 8,
+                                  vertical: 4,
                                 ),
-                            Text(
-                              release.date,
-                              style: const TextStyle(
-                                fontSize: 12,
-                                fontWeight: FontWeight.w300,
+                                child: GestureDetector(
+                                  onTap: () {
+                                    toggleLike();
+                                  },
+                                  child: Row(
+                                    mainAxisSize: MainAxisSize.min,
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.center,
+                                    children: [
+                                      LikeIconAnimated(isLiked: release.isLiked),
+                                      const SizedBox(width: 4),
+                                      ClipRect(
+                                        child: AnimatedSwitcher(
+                                          duration: const Duration(
+                                            milliseconds: 300,
+                                          ),
+                                          transitionBuilder: (
+                                            Widget child,
+                                            Animation<double> animation,
+                                          ) {
+                                            final inAnimation = Tween<Offset>(
+                                              begin: const Offset(0, 1),
+                                              end: Offset.zero,
+                                            ).animate(animation);
+                                            final outAnimation = Tween<Offset>(
+                                              begin: const Offset(0, -1),
+                                              end: Offset.zero,
+                                            ).animate(animation);
+
+                                            if (child.key ==
+                                                ValueKey(release.nb_likes)) {
+                                              // Entrant
+                                              return SlideTransition(
+                                                position: inAnimation,
+                                                child: child,
+                                              );
+                                            } else {
+                                              // Sortant
+                                              return SlideTransition(
+                                                position: outAnimation,
+                                                child: child,
+                                              );
+                                            }
+                                          },
+                                          child: Text(
+                                            release.nb_likes.toString(),
+                                            key: ValueKey(release.nb_likes),
+                                            style: const TextStyle(height: 1),
+                                          ),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
                               ),
                             ),
                           ],
                         ),
                       ),
-                      // Onglets sans TabBarView
                       TabBar(
                         tabs: const [Tab(text: "Tracklist"), Tab(text: "Avis")],
                         onTap: (index) => setState(() {}),
@@ -550,22 +629,19 @@ class _ReleasePageState extends State<ReleasePage> {
                                       child: ReviewListView(
                                         reviews: reviews,
                                         displayReleaseCover: false,
-                                        onProfile: false,
                                         onSeeProfile: (review) {
-                                          // Navigation vers la page de l'utilisateur
                                           Navigator.push(
                                             context,
                                             MaterialPageRoute(
-                                              builder: (context) =>
-                                                  ProfilePage(
-                                                user: review.user,
-                                              ),
+                                              builder:
+                                                  (context) => ProfilePage(
+                                                    user: review.user,
+                                                  ),
                                             ),
                                           );
                                         },
                                         onSeeRelease: null,
                                         onSeeArtist: (review) {
-                                          // Navigation vers la page de l'artiste
                                           Navigator.push(
                                             context,
                                             MaterialPageRoute(

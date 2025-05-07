@@ -43,6 +43,9 @@ dependencies:
   hive_flutter: ^1.1.0
   flutter_reaction_button: ^3.0.0+3
   emoji_picker_flutter: ^4.3.0
+  flutter_dotenv: ^5.2.1
+  device_info_plus: ^11.4.0
+  intl: ^0.20.2
 
 dev_dependencies:
   flutter_test:
@@ -63,6 +66,7 @@ dev_dependencies:
 flutter:
   assets:
     - assets/images/
+    - .env
   fonts:
     - family: CooperHewitt
       fonts:

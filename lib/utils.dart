@@ -1,7 +1,10 @@
+import 'package:device_info_plus/device_info_plus.dart';
 import 'package:sonnow/services/auth_service.dart';
 import 'package:sonnow/models/artist.dart';
 import 'package:sonnow/models/release.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:flutter/foundation.dart';
 
 
 final AuthService authService = AuthService();
@@ -68,4 +71,22 @@ Future<bool> isCurrentUser(String profileId) async {
   final SharedPreferences prefs = await SharedPreferences.getInstance();
   final String? currentUserId = prefs.getString("userId");
   return currentUserId != null && currentUserId == profileId;
+}
+
+
+Future<bool> isEmulator() async {
+  final deviceInfo = DeviceInfoPlugin();
+  final androidInfo = await deviceInfo.androidInfo;
+
+  return androidInfo.isPhysicalDevice == false;
+}
+
+Future<String> getBaseUrl() async {
+  if (kIsWeb) {
+    return dotenv.env['BASE_URL_WEB']!;
+  } else if(await isEmulator()) {
+    return dotenv.env['BASE_URL_EMULATOR']!;
+  } else {
+    return dotenv.env['BASE_URL_PHYSICAL']!;
+  }
 }

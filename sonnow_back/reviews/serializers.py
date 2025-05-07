@@ -2,7 +2,6 @@ from rest_framework.serializers import ModelSerializer
 from rest_framework import serializers
 
 from releases.models import Release
-from releases.serializers import ReleaseSerializer
 from .models import Review, Tag, ReactionReview, ReactionType
 from user_profile.models import Profile
 
@@ -39,15 +38,24 @@ class ReactionReviewSerializer(serializers.ModelSerializer):
         validated_data['user'] = self.context['request'].user
         return super().create(validated_data)
 
-
-
 class TagSerializer(ModelSerializer):
     class Meta:
         model = Tag
         fields = ['id', 'content']
 
+class SimpleReleaseSerializer(serializers.ModelSerializer):
+    artist = serializers.SerializerMethodField()
+
+    class Meta:
+        model = Release
+        fields = ['id', 'title', 'image_url', 'release_date', 'artist']
+
+    def get_artist(self, obj):
+        from artists.serializers import ArtistSerializer
+        return ArtistSerializer(obj.artist, read_only=True, context=self.context).data
+
 class ReviewSerializer(ModelSerializer):
-    release = ReleaseSerializer(read_only=True)
+    release = SimpleReleaseSerializer(read_only=True)
     release_id = serializers.PrimaryKeyRelatedField(
         queryset=Release.objects.all(),
         write_only=True

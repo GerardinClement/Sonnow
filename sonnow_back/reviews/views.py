@@ -112,3 +112,14 @@ class TagView(ListCreateAPIView):
     permission_classes = [AllowAny]
     serializer_class = TagSerializer
     queryset = Tag.objects.all()
+
+class MostPopularReviewsListView(ListAPIView):
+    """Liste les reviews les plus populaires"""
+    serializer_class = ReviewSerializer
+    permission_classes = [AllowAny]
+
+    def get_queryset(self):
+        from django.db.models import Count
+        return Review.objects.annotate(
+            reaction_count=Count('reactionreview')
+        ).order_by('-reaction_count', '-created_at')

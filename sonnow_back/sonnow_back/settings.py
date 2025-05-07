@@ -27,7 +27,7 @@ SECRET_KEY = 'django-insecure-dk$4&zwk)kac(c5)lph^hrrhwam3$au+7nht#7)7ad)s)&2%*+
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 CSRF_COOKIE_SECURE = False
-CSRF_TRUSTED_ORIGINS = ['http://*', 'https://*']
+CSRF_TRUSTED_ORIGINS = ['http://*', 'https://*', 'http://localhost:33396']
 DEFAULT_CHARSET = 'utf-8'
 FILE_CHARSET = 'utf-8'
 
@@ -35,6 +35,7 @@ FILE_CHARSET = 'utf-8'
 ALLOWED_HOSTS = [
     '*',
     '10.0.2.2',
+    '10.64.1.138',
 ]
 
 
@@ -53,6 +54,7 @@ INSTALLED_APPS = [
     'rest_framework_simplejwt',
     'rest_framework.authtoken',
     'rest_framework_simplejwt.token_blacklist',
+    'corsheaders',
 
     'users.apps.UsersConfig',
 
@@ -87,6 +89,7 @@ SIMPLE_JWT = {
 }
 
 MIDDLEWARE = [
+    'corsheaders.middleware.CorsMiddleware',
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -95,6 +98,10 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
+
+CORS_ALLOW_ALL_ORIGINS = True
+CORS_ALLOW_CREDENTIALS = True
+CORS_ALLOW_METHODS = ['DELETE', 'GET', 'OPTIONS', 'PATCH', 'POST', 'PUT']
 
 ROOT_URLCONF = 'sonnow_back.urls'
 

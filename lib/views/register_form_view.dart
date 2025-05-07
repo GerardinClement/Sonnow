@@ -1,3 +1,4 @@
+// Dans register_form_view.dart
 import 'package:flutter/material.dart';
 import 'package:sonnow/services/auth_service.dart';
 
@@ -53,53 +54,74 @@ class _RegisterFormState extends State<RegisterForm> {
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      children: [
-        TextField(
-          controller: usernameController,
-          decoration: InputDecoration(
-            labelText: 'Username',
-            hintText: 'Choose a username',
-          ),
-        ),
-        TextField(
-          controller: emailController,
-          decoration: InputDecoration(
-            labelText: 'Email',
-            hintText: 'Enter your email',
-          ),
-        ),
-        TextField(
-          controller: passwordController,
-          obscureText: _obscureText,
-          decoration: InputDecoration(
-            labelText: 'Password',
-            hintText: 'Enter your password',
-            suffixIcon: IconButton(
-              onPressed: () {
-                setState(() {
-                  _obscureText = !_obscureText;
-                });
-              },
-              icon: Icon(Icons.visibility, color: Colors.black),
+    return Padding(
+      padding: const EdgeInsets.all(16.0),
+      child: SingleChildScrollView(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            TextField(
+              controller: usernameController,
+              decoration: const InputDecoration(
+                labelText: 'Username',
+                hintText: 'Choose a username',
+              ),
             ),
-          ),
-        ),
-        ElevatedButton(onPressed: register, child: Text('Register')),
-        if (_errorMessage != null)
-          Padding(
-            padding: const EdgeInsets.only(top: 8.0),
-            child: Text(_errorMessage!, style: TextStyle(color: Colors.red)),
-          ),
-        if (_successMessage != null)
-          Padding(
-            padding: const EdgeInsets.only(top: 8.0),
-            child: Text(
-              _successMessage!,
-              style: TextStyle(color: Colors.green),
+            const SizedBox(height: 16.0),
+            TextField(
+              controller: emailController,
+              decoration: const InputDecoration(
+                labelText: 'Email',
+                hintText: 'Enter your email',
+              ),
             ),
-          ),
-      ],
+            const SizedBox(height: 16.0),
+            TextField(
+              controller: passwordController,
+              obscureText: _obscureText,
+              decoration: InputDecoration(
+                labelText: 'Password',
+                hintText: 'Enter your password',
+                suffixIcon: IconButton(
+                  onPressed: () {
+                    setState(() {
+                      _obscureText = !_obscureText;
+                    });
+                  },
+                  icon: const Icon(Icons.visibility, color: Colors.black),
+                ),
+              ),
+            ),
+            const SizedBox(height: 24.0),
+            if (_errorMessage != null)
+              Padding(
+                padding: const EdgeInsets.only(top: 8.0),
+                child: Text(
+                  _errorMessage!,
+                  style: const TextStyle(color: Colors.red),
+                ),
+              ),
+            if (_successMessage != null)
+              Padding(
+                padding: const EdgeInsets.only(top: 8.0),
+                child: Text(
+                  _successMessage!,
+                  style: const TextStyle(color: Colors.green),
+                ),
+              ),
+            const SizedBox(height: 24.0),
+            SizedBox(
+              width: double.infinity,
+              height: 48.0,
+              child: ElevatedButton(
+                onPressed: register,
+                child: const Text('Register'),
+              ),
+            ),
+          ],
+        ),
+      ),
     );
   }
 }

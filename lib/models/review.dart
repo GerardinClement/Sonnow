@@ -23,7 +23,7 @@ class Review {
   final String content;
   final List<String> tags;
   final User user;
-  final String date;
+  final DateTime createdAt;
   final List<ReviewReaction> reactions;
 
   Review({
@@ -32,7 +32,7 @@ class Review {
     required this.content,
     required this.tags,
     required this.user,
-    required this.date,
+    required this.createdAt,
     this.reactions = const [],
   });
 
@@ -48,7 +48,7 @@ class Review {
               )
               : [],
       user: User.fromJson(json['user_profile']),
-      date: json['date']?.toString() ?? "Unknown",
+      createdAt: json['created_at'] != null ? DateTime.parse(json['created_at'].toString()) : DateTime.now(),
       reactions:
           json['reactions'] != null
               ? List<ReviewReaction>.from(

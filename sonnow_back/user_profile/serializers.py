@@ -18,7 +18,7 @@ class ProfileSerializer(serializers.ModelSerializer):
     highlighted_artist = ArtistSerializer(read_only=True)
     highlighted_release = ReleaseSerializer(read_only=True)
     reviews = serializers.SerializerMethodField()
-    profile_picture = serializers.SerializerMethodField()
+    profile_picture = serializers.ImageField(required=False)
     follows = SimpleProfileSerializer(many=True, read_only=True)
     followers = serializers.SerializerMethodField()
 
@@ -63,6 +63,7 @@ class ProfileSerializer(serializers.ModelSerializer):
         highlighted_artist_id = validated_data.pop('highlighted_artist_id', None)
         highlighted_release_id = validated_data.pop('highlighted_release_id', None)
         follows_ids = validated_data.pop('follows_ids', None)
+        profile_picture = validated_data.pop('profile_picture', None)
 
         if highlighted_artist_id is not None:
             from artists.models import Artist
@@ -80,6 +81,9 @@ class ProfileSerializer(serializers.ModelSerializer):
 
         if follows_ids is not None:
             instance.follows.set(follows_ids)
+
+        if profile_picture is not None:
+            instance.profile_picture = profile_picture
 
         return super().update(instance, validated_data)
 

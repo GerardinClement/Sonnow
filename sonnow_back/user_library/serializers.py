@@ -4,9 +4,18 @@ from releases.serializers import ReleaseSerializer
 from releases.models import Release
 from artists.serializers import ArtistSerializer
 from artists.models import Artist
+from user_profile.models import Profile
+
+class SimpleProfileSerializer(serializers.ModelSerializer):
+    username = serializers.CharField(source='user.username', read_only=True)
+
+    class Meta:
+        model = Profile
+        fields = ['id', 'username', 'display_name', 'profile_picture']
 
 class LikedReleaseSerializer(serializers.ModelSerializer):
     release = ReleaseSerializer(read_only=True)
+    user = SimpleProfileSerializer(source='user.profile', read_only=True)
 
     class Meta:
         model = LikedRelease
@@ -20,6 +29,7 @@ class LikedReleaseSerializer(serializers.ModelSerializer):
 
 class LikedArtistSerializer(serializers.ModelSerializer):
     artist = ArtistSerializer(read_only=True)
+    user = SimpleProfileSerializer(source='user.profile', read_only=True)
 
     class Meta:
         model = LikedArtist
@@ -35,6 +45,7 @@ class LikedArtistSerializer(serializers.ModelSerializer):
 
 class ToListenSerializer(serializers.ModelSerializer):
     release = ReleaseSerializer(read_only=True)
+    user = SimpleProfileSerializer(source='user.profile', read_only=True)
 
     class Meta:
         model = ToListenRelease

@@ -7,9 +7,10 @@ import 'package:sonnow/services/user_library_storage.dart';
 import 'package:sonnow/models/release.dart';
 import 'package:sonnow/models/artist.dart';
 import 'package:sonnow/utils.dart';
+import 'package:sonnow/globals.dart';
 
 class UserLibraryService {
-  final String baseUrl = "http://10.0.2.2:8000/user/library";
+  String url = "$baseUrl/user/library";
   final AuthService authService = AuthService();
 
   // Methods to manage user liked releases
@@ -18,7 +19,7 @@ class UserLibraryService {
     Map<String, String> header = await setRequestHeader();
 
     final response = await http.get(
-      Uri.parse("$baseUrl/liked-releases/"),
+      Uri.parse("$url/liked-releases/"),
       headers: header,
     );
 
@@ -39,7 +40,7 @@ class UserLibraryService {
 
     await getOrCreateRelease(release);
     final response = await http.post(
-      Uri.parse("$baseUrl/like-release/${release.id}/"),
+      Uri.parse("$url/like-release/${release.id}/"),
       headers: header,
     );
 
@@ -52,7 +53,7 @@ class UserLibraryService {
     Map<String, String> header = await setRequestHeader();
 
     final response = await http.delete(
-      Uri.parse("$baseUrl/unlike-release/${release.id}/"),
+      Uri.parse("$url/unlike-release/${release.id}/"),
       headers: header,
     );
 
@@ -73,7 +74,7 @@ class UserLibraryService {
     Map<String, String> header = await setRequestHeader();
 
     final response = await http.get(
-      Uri.parse("$baseUrl/liked-artists/"),
+      Uri.parse("$url/liked-artists/"),
       headers: header,
     );
 
@@ -94,7 +95,7 @@ class UserLibraryService {
 
     await getOrCreateArtist(artist);
     final response = await http.post(
-      Uri.parse("$baseUrl/like-artist/${artist.id}/"),
+      Uri.parse("$url/like-artist/${artist.id}/"),
       headers: header,
     );
 
@@ -107,7 +108,7 @@ class UserLibraryService {
     Map<String, String> header = await setRequestHeader();
 
     final response = await http.delete(
-      Uri.parse("$baseUrl/unlike-artist/${artist.id}/"),
+      Uri.parse("$url/unlike-artist/${artist.id}/"),
       headers: header,
     );
 
@@ -127,7 +128,7 @@ class UserLibraryService {
     Map<String, String> header = await setRequestHeader();
 
     final response = await http.get(
-      Uri.parse("$baseUrl/to-listen/"),
+      Uri.parse("$url/to-listen/"),
       headers: header,
     );
 
@@ -148,7 +149,7 @@ class UserLibraryService {
 
     await getOrCreateRelease(release);
     final response = await http.post(
-      Uri.parse("$baseUrl/to-listen/add/${release.id}/"),
+      Uri.parse("$url/to-listen/add/${release.id}/"),
       headers: header,
     );
 
@@ -161,7 +162,7 @@ class UserLibraryService {
     Map<String, String> header = await setRequestHeader();
 
     final response = await http.delete(
-      Uri.parse("$baseUrl/to-listen/delete/${release.id}/"),
+      Uri.parse("$url/to-listen/delete/${release.id}/"),
       headers: header,
     );
 
@@ -191,7 +192,7 @@ class UserLibraryService {
     Map<String, String> header = await setRequestHeader();
 
     final response = await http.get(
-      Uri.parse("http://10.0.2.2:8000/release/${release.id}/"),
+      Uri.parse("$baseUrl/release/${release.id}/"),
       headers: header,
     );
 
@@ -207,7 +208,7 @@ class UserLibraryService {
 
     await getOrCreateArtist(release.artist);
     final response = await http.post(
-      Uri.parse("http://10.0.2.2:8000/release/"),
+      Uri.parse("$baseUrl/release/"),
       headers: header,
       body: jsonEncode({
         "id": release.id,
@@ -238,7 +239,7 @@ class UserLibraryService {
     Map<String, String> header = await setRequestHeader();
 
     final response = await http.get(
-      Uri.parse("http://10.0.2.2:8000/artist/${artist.id}/"),
+      Uri.parse("$baseUrl/artist/${artist.id}/"),
       headers: header,
     );
 
@@ -253,7 +254,7 @@ class UserLibraryService {
     Map<String, String> header = await setRequestHeader();
 
     final response = await http.post(
-      Uri.parse("http://10.0.2.2:8000/artist/"),
+      Uri.parse("$baseUrl/artist/"),
       headers: header,
       body: jsonEncode({
         "id": artist.id,

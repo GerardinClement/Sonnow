@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:sonnow/pages/auth_page.dart';
 import 'package:sonnow/pages/profile_page.dart';
 import 'package:sonnow/pages/search_page.dart';
+import 'package:sonnow/pages/home_page.dart';
 import 'package:sonnow/pages/library_page.dart';
 import 'package:sonnow/services/auth_service.dart';
 import 'package:sonnow/services/user_library_service.dart';
@@ -13,6 +14,7 @@ import 'package:sonnow/layouts/bottom_navigation.dart';
 import 'package:sonnow/globals.dart';
 import 'package:sonnow/themes/app_theme.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:sonnow/views/login_form_view.dart';
 
 class App extends StatefulWidget {
   const App({super.key});
@@ -24,6 +26,7 @@ class App extends StatefulWidget {
 class AppState extends State<App> {
   final UserLibraryService userLibraryService = UserLibraryService();
   final UserProfileService userProfileService = UserProfileService();
+  final AuthService authService = AuthService();
   late bool isLogin = false;
   static int currentTab = 0;
 
@@ -46,7 +49,22 @@ class AppState extends State<App> {
       page: LibraryPage(),
       index: 2,
     ),
+    TabItem(
+      tabName: "Home",
+      icon: Icons.home,
+      page: HomePage(),
+      index: 3,
+    ),
   ];
+
+  void setLoggedOut() {
+    setState(() {
+      isLogin = false;
+      currentTab = 0;
+    });
+
+    authService.logout();
+  }
 
   void _selectTab(int index) {
     if (index == currentTab) {
@@ -64,6 +82,11 @@ class AppState extends State<App> {
       userProfileRefreshNotifier.value = true;
     } else {
       userProfileRefreshNotifier.value = false;
+    }
+    if (tabs[index].tabName == 'Home') {
+      homeRefreshNotifier.value = true;
+    } else {
+      homeRefreshNotifier.value = false;
     }
   }
 
@@ -133,9 +156,9 @@ class AppState extends State<App> {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      theme: AppTheme.lightTheme,
+      theme: AppTheme.darkTheme,
       home:
-          isLogin ? _buildMainApp() : AuthPage(onLoginSuccess: onLoginSuccess),
+          isLogin ? _buildMainApp() : LoginForm(onLoginSuccess: onLoginSuccess),
     );
   }
 

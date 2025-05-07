@@ -232,10 +232,8 @@ class _ProfilePageState extends State<ProfilePage> with RouteAware {
                           ?  ReviewListView(
                         reviews: user.reviews,
                         displayReleaseCover: true,
-                        onProfile: true,
                         onSeeProfile: null,
                         onSeeRelease: (review) {
-                          // Navigation vers la page de la release
                           Navigator.push(
                             context,
                             MaterialPageRoute(
@@ -244,7 +242,6 @@ class _ProfilePageState extends State<ProfilePage> with RouteAware {
                           );
                         },
                         onSeeArtist: (review) {
-                          // Navigation vers la page de l'artiste
                           Navigator.push(
                             context,
                             MaterialPageRoute(

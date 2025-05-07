@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:sonnow/models/review.dart';
 import 'package:sonnow/services/review_service.dart';
+import 'package:sonnow/themes/app_colors.dart';
 import 'package:sonnow/utils.dart';
 import 'package:sonnow/pages/profile_page.dart';
 
@@ -158,7 +159,7 @@ class _ReactionWidgetState extends State<ReactionWidget> {
                       ),
                       decoration: BoxDecoration(
                         color: currentUserReacted(entry.key)
-                            ? Theme.of(context).colorScheme.primary
+                            ? AppColors.secondary.withAlpha(100)
                             : Colors.transparent,
                         borderRadius: BorderRadius.circular(12.0),
                         border: Border.all(
@@ -184,7 +185,7 @@ class _ReactionWidgetState extends State<ReactionWidget> {
                               fontWeight: FontWeight.bold,
                               color: currentUserReacted(entry.key)
                                   ? Colors.white
-                                  : Theme.of(context).colorScheme.primary,
+                                  : AppColors.secondary,
                             ),
                           ),
                         ],

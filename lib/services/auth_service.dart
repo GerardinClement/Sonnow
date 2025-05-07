@@ -5,26 +5,38 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import 'package:sonnow/utils.dart';
 import 'package:sonnow/services/user_library_storage.dart';
-
+import 'package:sonnow/globals.dart';
+import 'package:flutter/foundation.dart' show kIsWeb;
 
 class AuthService {
-  static const String baseUrl = "http://10.0.2.2:8000/";
-
   Future<String> getCsrfToken() async {
-    final response = await http.get(Uri.parse("${baseUrl}user/csrf/"));
+    final response = await http.get(Uri.parse("$baseUrl/user/csrf/"));
 
     if (response.statusCode == 200) {
-      final cookieHeader = response.headers['set-cookie'];
-      final csrfTokenMatch = RegExp(r'csrftoken=([^;]+)').firstMatch(cookieHeader!);
-      return csrfTokenMatch?.group(1) ?? '';
+      if (kIsWeb) {
+        final data = response.headers['set-cookie'];
+        return data?.split(';')[0].split('=')[1] ?? '';
+      } else {
+        final cookieHeader = response.headers['set-cookie'];
+        if (cookieHeader != null) {
+          final csrfTokenMatch = RegExp(
+            r'csrftoken=([^;]+)',
+          ).firstMatch(cookieHeader);
+          return csrfTokenMatch?.group(1) ?? '';
+        }
+        return '';
+      }
     } else {
-      throw Exception("Error getting CSRF token");
+      throw Exception("Erreur lors de la récupération du token CSRF");
     }
   }
 
-
-  Future<void> register(Map<String, String> credentials, Function onSuccess, Function(dynamic error) onError) async {
-    final url = "${baseUrl}user/register/";
+  Future<void> register(
+    Map<String, String> credentials,
+    Function onSuccess,
+    Function(dynamic error) onError,
+  ) async {
+    final url = "$baseUrl/user/register/";
     final csrfToken = await getCsrfToken();
 
     final response = await http.post(
@@ -48,12 +60,14 @@ class AuthService {
       onSuccess();
     } else {
       final errorData = jsonDecode(response.body);
-      onError(errorData['message'] ?? "Error registering user, please try again.");
+      onError(
+        errorData['message'] ?? "Error registering user, please try again.",
+      );
     }
   }
 
   Future<bool> login(String username, String password) async {
-    final url = "${baseUrl}user/token/";
+    final url = "$baseUrl/user/token/";
     final csrfToken = await getCsrfToken();
 
     final response = await http.post(
@@ -100,7 +114,7 @@ class AuthService {
     if (token == null) return false;
 
     final response = await http.post(
-      Uri.parse("${baseUrl}user/token/verify/"),
+      Uri.parse("$baseUrl/user/token/verify/"),
       headers: {"Content-Type": "application/json"},
       body: jsonEncode({"token": token}),
     );
@@ -111,7 +125,7 @@ class AuthService {
   Future refreshAccessToken() async {
     final refreshToken = await getToken("refresh_token");
     final response = await http.post(
-      Uri.parse('${baseUrl}user/token/refresh/'),
+      Uri.parse('$baseUrl/user/token/refresh/'),
       body: jsonEncode({'refresh': refreshToken}),
       headers: {'Content-Type': 'application/json'},
     );
@@ -147,7 +161,7 @@ class AuthService {
     final Map<String, String> header = await setRequestHeader();
 
     final response = await http.get(
-      Uri.parse("${baseUrl}user/info/"),
+      Uri.parse("$baseUrl/user/info/"),
       headers: header,
     );
 
@@ -158,11 +172,15 @@ class AuthService {
     }
   }
 
-  Future<void> updateUserAccount(Map<String, String> credentials, Function onSuccess, Function(dynamic error) onError) async {
+  Future<void> updateUserAccount(
+    Map<String, String> credentials,
+    Function onSuccess,
+    Function(dynamic error) onError,
+  ) async {
     final Map<String, String> header = await setRequestHeader();
 
     final response = await http.patch(
-      Uri.parse("${baseUrl}user/update/"),
+      Uri.parse("$baseUrl/user/update/"),
       headers: header,
       body: jsonEncode(credentials),
     );
@@ -172,11 +190,15 @@ class AuthService {
     if (response.statusCode != 200) onError(data['error'] ?? "Unknown error");
   }
 
-  Future<void> deleteUserAccount(String password, Function onSuccess, Function(dynamic error) onError) async {
+  Future<void> deleteUserAccount(
+    String password,
+    Function onSuccess,
+    Function(dynamic error) onError,
+  ) async {
     final Map<String, String> header = await setRequestHeader();
 
     final response = await http.delete(
-      Uri.parse("${baseUrl}user/delete/"),
+      Uri.parse("$baseUrl/user/delete/"),
       headers: header,
       body: jsonEncode({"password": password}),
     );
@@ -185,5 +207,4 @@ class AuthService {
     if (response.statusCode == 200) onSuccess();
     if (response.statusCode != 200) onError(data['message'] ?? "Unknown error");
   }
-
 }

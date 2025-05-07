@@ -31,7 +31,7 @@ class BottomNavigation extends StatelessWidget {
             padding: const EdgeInsets.symmetric(horizontal: 2, vertical: 6),
             decoration: BoxDecoration(
               backgroundBlendMode: BlendMode.darken,
-              color: const Color(0xFF042A2B).withOpacity(0.5),
+              color: const Color(0xFF042A2B).withAlpha(150),
               borderRadius: BorderRadius.circular(40),
             ),
             child: Row(
